@@ -10,5 +10,8 @@ using System.Threading.Tasks;
 
 namespace Resturant.Application.HandleCart.Query
 {
-    public class GetAllCartItems : IRequest<List<CartDTO>> {}
+    public class GetAllCartItems : IRequest<List<CartDTO>>
+    {
+        
+    }
 }

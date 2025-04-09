@@ -8,7 +8,7 @@ using Resturant.Application.HandleCart.Query;
 using Resturant.Application.HandleCart.Command;
 using Resturant.Application.DTO;
 using Resturant.Domain.DomainEvents;
-using Restuarant.Infrastucture.Context;
+using Resturant.Infrastructure.Context;
 using Resturant.Application.DomainEventHandler;
 
 namespace API.Controllers
@@ -20,38 +20,52 @@ namespace API.Controllers
 
         private readonly IMediator _mediator;
         private readonly ILogger<OrderController> _logger;
-        private readonly ToDoContext _toDoContext;
+      
 
 
-        public OrderController(IMediator mediatR, ILogger<OrderController> logger, ToDoContext toDoContext)
+        public OrderController(IMediator mediatR, ILogger<OrderController> logger)
         {
 
             _mediator = mediatR ?? throw  new ArgumentNullException(nameof(mediatR));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));    
-            _toDoContext = toDoContext ?? throw new ArgumentNullException(nameof(toDoContext));    
+   
         }
 
-        [ProducesResponseType(200)]
-        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
-        [HttpPost("PostCart")]
-
-        //use a dto instead 
-        public async Task<CartItems> PostCart(string items, int prices, string name)
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [HttpPost("action")]
+        public async Task<ActionResult<CartDTO>> PostDto(CartDTO cartDto)
         {
+            _logger.LogInformation("Creating order");
+            if (ModelState.IsValid)
+            {
+                _logger.LogInformation("hey the model satte is valid");
+                _logger.LogInformation(ModelState.ErrorCount.ToString());
+            }
 
-            var newGuid = Guid.NewGuid();
+            if (!ModelState.IsValid)
+            {
+                Console.WriteLine("the MODEL SATE IS INVALID");
+            }
+     
+            PostCartItems items = new(cartDto);
+            var databaseItem = await _mediator.Send(items);
+            //this has to match one of the routes below  !
+            return CreatedAtAction("ReturnCartItemsByName", new { nameoncard = databaseItem.Name}, databaseItem);
+        }
+        
 
-            CartItems cart = CartItems.CreateCart(newGuid, items, prices, name);
-
-            //everytime you create and item here it also adds to an item to the domain event 
-            var domainevents =  cart.DomainEvents;
-
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [HttpPost("PostCart")]
+        public async Task<ActionResult<CartItems>> PostCart(CartDTO cartDto)
+        {
             //this validation won't work if using data annotations
             // Validation.ValidateWithRegex(cartItems.OrderInformationNameonCard); 
 
             if (ModelState.IsValid)
             {
-                PostCartItems postcart = new(cart);
+                _logger.LogInformation($"the model state is correct");
+                PostCartItems postcart = new(cartDto);
                 var databaseItem = await _mediator.Send(postcart);
 
 
@@ -59,50 +73,51 @@ namespace API.Controllers
                // PriceUpdateDomainEvent price = new PriceUpdateDomainEvent(prices, Guid.NewGuid());
                // await _mediator.Publish(price); 
 
-                return databaseItem;
+             //   return  Ok(databaseItem);
+                return CreatedAtRoute("GetCart", new { Name = databaseItem.Name}, databaseItem);
+              //  return CreatedAtAction(databaseItem, postcart); 
             }
             else
             {
-                throw new Exception("incorrect model state");
+                _logger.LogError("CartItems not valid");
+                return BadRequest("the model is invalid");
             }
         }
 
-        [ProducesResponseType((int)HttpStatusCode.OK)]
+  
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [HttpGet("CartItems")]
-        public async Task<List<CartDTO>> GetCartItems()
+        public async Task<ActionResult<List<CartDTO>>> GetCartItems()
         {
-            GetAllCartItems getallcartItems = new GetAllCartItems();
-            return await _mediator.Send(getallcartItems);
+            GetAllCartItems getallcartitems = new GetAllCartItems(); 
+            var listCartItems = await _mediator.Send(getallcartitems);
+            return Ok(listCartItems);
         }
 
 
-        [HttpGet("CartItemsByName")]
-        public async Task<IEnumerable<CartDTO>> ReturnCartItemByName(string nameoncard)
+        
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [HttpGet("ReturnCartItemsByName")]
+        public async Task<ActionResult<IEnumerable<CartDTO>>> ReturnCartItemsByName([FromQuery] string nameoncard)
         {
+         
             if (string.IsNullOrEmpty(nameoncard))
             {
-                throw new NullReferenceException(nameof(nameoncard));
+                return BadRequest(nameof(nameoncard));    
             }
 
-            GetAllCartItems getallcartItems = new GetAllCartItems();
-            var allcartItems = await _mediator.Send(getallcartItems);
-
-
-            IEnumerable<CartDTO> carts = from x in allcartItems
-                                         where x.name == nameoncard
-                                         select x;
-
-
-            if (!carts.Any())
+            GetAllCartItemsByName name= new GetAllCartItemsByName(nameoncard);
+            var allCartItems = await _mediator.Send(name);
+            
+            
+            if (!allCartItems.Any())
             {
-                throw new ArgumentException($"no value has been found in {nameof(carts)}");
+                return NotFound(); 
             }
-
-
-            return carts;
+            return Ok(allCartItems);
         }
-
-
-
+        
     }
 }

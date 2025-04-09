@@ -14,12 +14,15 @@ using System.Text;
 
 //using Restuarant.Infrastucture.Repository; 
 using Newtonsoft.Json;
-using Restuarant.Infrastucture.Context;
-using Resturant.Application.Respository;
+using Resturant.Infrastructure.Context;
+using Resturant.Infrastructure.Repository;
 using Resturant.Domain.Entity;
 using System.Reflection;
 using MediatR;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Resturant.Application.Extension; 
+using Resturant.Application.Respository;
+using Resturant.Infrastructure.Repository;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -38,7 +41,11 @@ builder.Services.AddTransient<IRepo<User>, UsersRepo>();
 //builder.Services.AddTransient<ExceptionHandlingMIddleware>();
 
 //use in memory database instead of sql database right now 
-builder.Services.AddDbContext<ToDoContext>(options => options.UseSqlServer("name=WebApp2"));
+//builder.Services.AddDbContext<ToDoContext>(options => options.UseSqlServer("name=WebApp2"));
+
+builder.Services.AddDbContext<ToDoContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+
 //builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
 //builder.AddServices();
 builder.Services.AddAnotherService(); 
@@ -67,65 +74,9 @@ builder.Services.AddAnotherService();
 builder.Services.AddSwaggerGen(opt =>
 {
     opt.SwaggerDoc("v1", new OpenApiInfo { Title = "MyResturantAPI", Version = "v1" });
-
-    //mainly for testing with swagger-authorization header using a bearer token
-    opt.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-
-        In = ParameterLocation.Header,
-        Description = "Please enter a token ",
-        Name = "Authorization",
-        Type = SecuritySchemeType.ApiKey,
-        //   BearerFormat = "JWT",
-        //  Scheme = "bearer"
-    });
-
-
-    //this HAS to be included to authorize a route with the authorize attribute-NOT for authentication 
-    opt.AddSecurityRequirement(new OpenApiSecurityRequirement()
-{
-    {
-        new OpenApiSecurityScheme
-        {
-            Reference = new OpenApiReference
-            {
-                Type = ReferenceType.SecurityScheme,
-                Id = "Bearer"
-            },
-            Scheme = "http",
-            Name = "Bearer",
-            In = ParameterLocation.Header,
-
-        },
-        new List<string>()
-    }
 });
 
-});
 
-//the authentciation schema 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddCookie(x => x.Cookie.Name = "token")
-    .AddJwtBearer(
-       options => {
-           options.TokenValidationParameters = new TokenValidationParameters
-                                               {
-                                                   ValidateIssuer = false,
-                                                   ValidateAudience = false,
-                                                   ValidateIssuerSigningKey = true,
-                                                   IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetSection("AppSettings:Token").Value)),
-                                               };
-//allows this application to access the Bearer token cookie - allwoing authorization to work 
-options.Events = new JwtBearerEvents
-{
-    OnMessageReceived = context =>
-    {
-        context.Token = context.Request.Cookies["token"];
-        return Task.CompletedTask;
-    }
-};
-
-       });
 
 
 builder.Services.AddCors(options =>
@@ -136,14 +87,8 @@ builder.Services.AddCors(options =>
         //AllowAnyMethod().
         //AllowCredentials().
         //AllowAnyHeader();
-
         // allow all origins to work
-        builder.AllowAnyOrigin()
-
-                   .AllowAnyHeader()
-                 .AllowAnyMethod();
-
-
+        builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
     });
 });
 

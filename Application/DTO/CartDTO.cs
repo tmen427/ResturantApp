@@ -1,12 +1,37 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace Resturant.Application.DTO
 {
-    public record CartDTO (Guid Id, string items, int? prices, string name)
+    
+    //a dto can have some sort of validation 
+    public class CartDTO 
     {
+        public CartDTO(string items, int prices, string name)
+        {
+            Items = items;
+            Prices = prices;
+            Name = name;
+        }
+
+        //parameterless constructor is always required
+        public CartDTO()
+        {
+            
+        }
+        
+        [Required]
+        [MinLength(2)]
+        public string Items { get; set;  }
+        [Required]
+        public int Prices { get; set; }
+        [Required]
+        [MinLength(2)]
+        public string  Name { get; set;  }   
     }
 }

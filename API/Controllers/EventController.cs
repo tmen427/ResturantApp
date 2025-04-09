@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Restuarant.Infrastucture.Context;
+
 using Resturant.Domain.Entity;
 using Resturant.Domain.EventSourcing;
+using Resturant.Infrastructure.Context;
+
 namespace API.Controllers
 {
     [Route("api/[controller]")]

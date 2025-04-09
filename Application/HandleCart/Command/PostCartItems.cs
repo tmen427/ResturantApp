@@ -1,22 +1,13 @@
-﻿using MediatR;
+using MediatR;
 using Resturant.Application.DTO;
-using Resturant.Domain.Entity;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Resturant.Application.HandleCart.Command
+namespace Resturant.Application.HandleCart.Command;
+
+public class PostCartItems : IRequest<CartDTO>
 {
-    public class PostCartItems : IRequest<CartItems>
+    public CartDTO Cartdto { get; set; }    
+    public PostCartItems(CartDTO cart)
     {
-        public CartItems CartItems { get; set; }
-
-        public PostCartItems(CartItems cartItems)
-        {
-            CartItems = cartItems;
-        }
-
+        Cartdto = cart;
     }
 }

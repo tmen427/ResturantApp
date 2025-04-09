@@ -11,13 +11,14 @@ using Resturant.Domain.EventSourcing;
 
 
 
-namespace Restuarant.Infrastucture.Context
+namespace Resturant.Infrastructure.Context
 {
     public class ToDoContext : DbContext
     {
         public ToDoContext(DbContextOptions<ToDoContext> options, IMediator mediator) : base(options)
         {
             _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
+         //   _mediator = mediator; 
         }
 
         public DbSet<User> Users { get; set; }
@@ -28,57 +29,46 @@ namespace Restuarant.Infrastucture.Context
 
         public DbSet<Event> Events { get; set; } 
 
-        public DbSet<CartItems> CartItems { get; set; }
+        public DbSet<CartItems> CartItems { get; set; } 
         public DbSet<Contact> Contacts { get; set; }
-
         public DbSet<BookingInformation> BookingInformation { get; set; }
-
-
         public DbSet<UserInformation> UserInformation { get; set; }
 
         private readonly IMediator _mediator;
 
 
-        public override async Task<int> SaveChangesAsync(CancellationToken cancellation = default)
-        {
-
-
-
-            // track changes in List<INotification> DomainEvents 
-            var domainEvents = ChangeTracker.Entries<Aggregateroot>()
-                               .Where(x => x.Entity.DomainEvents != null)
-                               .SelectMany(x => x.Entity.DomainEvents)
-                               .ToList();
-
-
-            foreach (var domainEvent in domainEvents)
-            {
-                Console.WriteLine("it should work now bro!!!");
-                Console.WriteLine(domainEvent);
-                //this is the key right here !!!!, any handlers that have this event key will pick up the events!
-                //some devs convert to object that they want here, whereas some devleopers will send reuults to handlers 
-                if (domainEvent is PriceUpdateDomainEvent)
-                {
-                    Console.WriteLine("hey this is a priceupdatedomianevent");
-                }
-                else
-                {
-                    Console.WriteLine(domainEvent.GetType().Name);
-
-                }
-
-
-                //maybe the domainhandler can't pick the event up since it is in a different assembly???
-                await _mediator.Publish(domainEvent);
-            }
-
-
-            //when to you save changes....
-               return await base.SaveChangesAsync();
-
-            return 1;
-
-        }
+        // public override async Task<int> SaveChangesAsync(CancellationToken cancellation = default)
+        // {
+        //     // track changes in List<INotification> DomainEvents 
+        //     var domainEvents = ChangeTracker.Entries<Aggregateroot>()
+        //                        .Where(x => x.Entity.DomainEvents != null)
+        //                        .SelectMany(x => x.Entity.DomainEvents)
+        //                        .ToList();
+        
+        //     foreach (var domainEvent in domainEvents)
+        //     {
+        //         Console.WriteLine("the domian event should work here!!!");
+        //         Console.WriteLine(domainEvent);
+        //         //this is the key right here !!!!, any handlers that have this event key will pick up the events!
+        //         //some devs convert to object that they want here, whereas some devleopers will send reuults to handlers 
+        //         if (domainEvent is PriceUpdateDomainEvent)
+        //         {
+        //             Console.WriteLine("hey this is a priceupdatedomianevent");
+        //         }
+        //         else
+        //         {
+        //             Console.WriteLine(domainEvent.GetType().Name);
+        //
+        //         }
+        //
+        //
+        //         //maybe the domainhandler can't pick the event up since it is in a different assembly???
+        //      //   await _mediator.Publish(domainEvent);
+        //     }
+        //     //when to you save changes....
+        //     return await base.SaveChangesAsync();
+        //     return 1; 
+        // }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -90,11 +80,8 @@ namespace Restuarant.Infrastucture.Context
                 .IsRequired();
 
             modelBuilder.Entity<CartItems>().OwnsOne(p => p.Name);
-
             modelBuilder.Entity<CartItems>().HasKey(x => x.Id);
-
             modelBuilder.Entity<DomainEvent>().HasKey(x => x.Id);
-
             modelBuilder.Entity<Event>().HasKey(x => x.Id);
         }
 

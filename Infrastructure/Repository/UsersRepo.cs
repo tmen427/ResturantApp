@@ -1,10 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Restuarant.Infrastucture.Context;
+using Resturant.Application.Respository;
+using Resturant.Infrastructure.Context;
 using Resturant.Domain.Entity;
 
 
 
-namespace Resturant.Application.Respository
+namespace Resturant.Infrastructure.Repository
 {
     public class UsersRepo : IRepo<User>
     {
@@ -14,7 +15,7 @@ namespace Resturant.Application.Respository
         {
             _context = context;
         }
-
+        
         public async Task<List<User>> CartItemsAsync()
         {
             var userList = await _context.Users.ToListAsync();
@@ -25,6 +26,12 @@ namespace Resturant.Application.Respository
         {
             throw new NotImplementedException();
         }
+        
+        public async Task<List<User>> SearchByName(string name)
+        {
+           throw new NotImplementedException(); 
+        }
+        
 
     }
 }

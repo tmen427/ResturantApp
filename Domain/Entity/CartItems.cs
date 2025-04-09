@@ -18,18 +18,22 @@ namespace Resturant.Domain.Entity
         private CartItems(Guid id, string items, int prices, string name) : base(id)
         {
 
-            item = items;
-            price = prices;
+            Item = items;
+            Price = prices;
             Name = new NameVO(name);
 
 
         }
 
-        public string? item { get; private set; }
-        public int? price { get; private set; }
+     //   [Required(ErrorMessage = "Product is required")]
+        public string Item { get; private set; }
+        public int Price { get; private set; }
+        
+       // [Required(ErrorMessage = "The name is required")]
+       // [MinLength(2, ErrorMessage = "The name must be at least 2 characters long")]
         public NameVO? Name { get; private set; }
 
-        public List<Event> Events = new List<Event>();
+        public List<Event>? Events = new List<Event>();
 
         public static CartItems CreateCart(Guid id, string items, int prices, string name)
         {
@@ -44,11 +48,8 @@ namespace Resturant.Domain.Entity
 
         public static void RemoveDomainEvents(Guid id, string prices)
         {
-
             CartItems cart = new();
             // forces you to insnatiate cart, since it's domain removal list<domainevents> is in the aggregate class 
-
-            //call save changes in 
         }
 
         public void ApplyEvents(Event @event)
@@ -56,14 +57,14 @@ namespace Resturant.Domain.Entity
            switch(@event.Type)
             {
                 case(EventItemType.Add):
-                    price += @event.Price;   
+                    Price += @event.Price;   
                     break; 
 
                 case(EventItemType.Decrease):
-                    price -= @event.Price; 
+                    Price -= @event.Price; 
                     break; 
                 case(EventItemType.Set):
-                    price = @event.Price;
+                    Price = @event.Price;
                     break; 
             }
 

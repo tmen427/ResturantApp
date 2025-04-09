@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Restuarant.Application.DTOConversions;
-using Restuarant.Infrastucture.Context;
+using Resturant.Infrastructure.Context;
 using Resturant.Application.DTO;
 using Resturant.Domain.Entity;
 

@@ -46,8 +46,8 @@ namespace Restuarant.Application.BackgrouondServices
                     Console.WriteLine("hey i'm from the background service");
                       foreach (var items in p)
                     {
-                        await Console.Out.WriteLineAsync(items.item?.ToString());
-                        if (items.item?.ToString() == "Tofu") {
+                        await Console.Out.WriteLineAsync(items.Item?.ToString());
+                        if (items.Item?.ToString() == "Tofu") {
                             await Console.Out.WriteLineAsync("send and email here if values are low");
                         }
                     } 

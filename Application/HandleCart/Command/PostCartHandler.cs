@@ -6,10 +6,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Resturant.Application.DTO;
 
 namespace Resturant.Application.HandleCart.Command
 {
-    public class PostCartHandler : IRequestHandler<PostCartItems, CartItems>
+    public class PostCartHandler : IRequestHandler<PostCartItems, CartDTO>
     {
 
         private readonly IRepo<CartItems> _repo; 
@@ -17,13 +18,16 @@ namespace Resturant.Application.HandleCart.Command
         {
             _repo = repo ?? throw new ArgumentNullException(nameof(repo));
         }
-
-        public async Task<CartItems> Handle(PostCartItems request, CancellationToken cancellationToken)
+        
+        public async Task<CartDTO> Handle(PostCartItems request, CancellationToken cancellationToken)
         {
             try
-            {
-                var cartItems = await _repo.PostItemsAsync(request.CartItems);
-                return request.CartItems!; 
+            { 
+                var converttoCartItem = CartItems.CreateCart(Guid.NewGuid(), request.Cartdto.Items, request.Cartdto.Prices, request.Cartdto.Name);
+                var cartItems = await _repo.PostItemsAsync(converttoCartItem);
+    
+                var ConverttoCartDto = new CartDTO(cartItems.Item, cartItems.Price, cartItems.Name.FirstName);
+                return ConverttoCartDto;
             }
             catch (Exception ex)
             {

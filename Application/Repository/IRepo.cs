@@ -7,6 +7,10 @@ namespace Resturant.Application.Respository
 
         Task<List<T>> CartItemsAsync(); 
 
-        Task<T> PostItemsAsync(T object_name);
+        Task<T> PostItemsAsync(T t);
+
+        Task<List<T>> SearchByName(string name); 
+
+
     }
 }
