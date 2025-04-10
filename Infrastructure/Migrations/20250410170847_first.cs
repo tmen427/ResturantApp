@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -7,7 +8,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Resturant.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class Intitial : Migration
+    public partial class first : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -36,8 +37,8 @@ namespace Resturant.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    item = table.Column<string>(type: "text", nullable: true),
-                    price = table.Column<int>(type: "integer", nullable: true),
+                    Item = table.Column<List<string>>(type: "text[]", nullable: false),
+                    Price = table.Column<double>(type: "double precision", nullable: false),
                     Name_FirstName = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
@@ -105,6 +106,18 @@ namespace Resturant.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "TemporaryCartItems",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TemporaryCartItems", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Users",
                 columns: table => new
                 {
@@ -117,6 +130,27 @@ namespace Resturant.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Users", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "MenuItemsVO",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "text", nullable: true),
+                    Price = table.Column<double>(type: "double precision", nullable: false),
+                    TemporaryCartItemsId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MenuItemsVO", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_MenuItemsVO_TemporaryCartItems_TemporaryCartItemsId",
+                        column: x => x.TemporaryCartItemsId,
+                        principalTable: "TemporaryCartItems",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -145,6 +179,11 @@ namespace Resturant.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_MenuItemsVO_TemporaryCartItemsId",
+                table: "MenuItemsVO",
+                column: "TemporaryCartItemsId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_UserInformation_UserId",
                 table: "UserInformation",
                 column: "UserId",
@@ -170,10 +209,16 @@ namespace Resturant.Infrastructure.Migrations
                 name: "Events");
 
             migrationBuilder.DropTable(
+                name: "MenuItemsVO");
+
+            migrationBuilder.DropTable(
                 name: "OrderInformation");
 
             migrationBuilder.DropTable(
                 name: "UserInformation");
+
+            migrationBuilder.DropTable(
+                name: "TemporaryCartItems");
 
             migrationBuilder.DropTable(
                 name: "Users");

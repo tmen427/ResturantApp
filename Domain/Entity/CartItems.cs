@@ -15,7 +15,7 @@ namespace Resturant.Domain.Entity
         {
         }
 
-        private CartItems(Guid id, string items, int prices, string name) : base(id)
+        private CartItems(Guid id, List<string> items, double prices, string name) : base(id)
         {
 
             Item = items;
@@ -26,8 +26,8 @@ namespace Resturant.Domain.Entity
         }
 
      //   [Required(ErrorMessage = "Product is required")]
-        public string Item { get; private set; }
-        public int Price { get; private set; }
+        public List<string> Item  { get; private set; }
+        public double Price { get; private set; }
         
        // [Required(ErrorMessage = "The name is required")]
        // [MinLength(2, ErrorMessage = "The name must be at least 2 characters long")]
@@ -35,7 +35,7 @@ namespace Resturant.Domain.Entity
 
         public List<Event>? Events = new List<Event>();
 
-        public static CartItems CreateCart(Guid id, string items, int prices, string name)
+        public static CartItems CreateCart(Guid id, List<string> items, double prices, string name)
         {
             CartItems cart = new CartItems(id, items, prices, name);
             

@@ -1,9 +1,12 @@
 ﻿
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 using Resturant.Domain.Entity;
 using Resturant.Application.Respository;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query.Internal;
 using Resturant.Application.HandleCart.Query;
 using Resturant.Application.HandleCart.Command;
 using Resturant.Application.DTO;
@@ -20,37 +23,75 @@ namespace API.Controllers
 
         private readonly IMediator _mediator;
         private readonly ILogger<OrderController> _logger;
+        private readonly ToDoContext _context; 
       
 
 
-        public OrderController(IMediator mediatR, ILogger<OrderController> logger)
+        public OrderController(IMediator mediatR, ILogger<OrderController> logger, ToDoContext context)
         {
 
             _mediator = mediatR ?? throw  new ArgumentNullException(nameof(mediatR));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));    
+            _context = context ?? throw new ArgumentNullException(nameof(context)); 
    
         }
+
+        [HttpGet("gettemp")]
+        public List<TemporaryCartItems> TemporaryCartItems()
+        {
+            
+        var x =   _context.TemporaryCartItems.Include("MenuItems").Any(x=>x.Indentity.ToString() == "3fa85f64-5717-4562-b3fc-2c963f66afa6");
+
+        var p = _context.TemporaryCartItems.Include("MenuItems")
+            .Where(x => x.Indentity.ToString() == "3fa85f64-5717-4562-b3fc-2c963f66afa6").ToList(); 
+      //    return   _context.TemporaryCartItems.Include("MenuItems").ToList(); 
+      return p; 
+        }
+        
+        
+
+        [HttpPost("temporaryCartItems")]
+        public async Task AddTempItems(TemporaryCartItems temporaryCartItems)
+        {
+            
+           await  _context.AddAsync(temporaryCartItems);
+           await _context.SaveChangesAsync();
+        }
+        
+   
 
         [ProducesResponseType(StatusCodes.Status201Created)]
         [HttpPost("action")]
         public async Task<ActionResult<CartDTO>> PostDto(CartDTO cartDto)
         {
-            _logger.LogInformation("Creating order");
-            if (ModelState.IsValid)
+            //store in dctionary righ tnow 
+            double total = 0; 
+            List<CartItems> cartItems = new List<CartItems>();
+            foreach (var item in cartDto.Items)
             {
-                _logger.LogInformation("hey the model satte is valid");
-                _logger.LogInformation(ModelState.ErrorCount.ToString());
+                cartItems.Add(new  CartItems(){ Name = item, Price = CheckItemPrices(item)});
+                total += CheckItemPrices(item);
             }
 
-            if (!ModelState.IsValid)
+            foreach (var item in cartItems)
             {
-                Console.WriteLine("the MODEL SATE IS INVALID");
+                _logger.LogInformation(item.Price.ToString() + " " + item.Name.ToString());
+                _logger.LogInformation(total.ToString());
             }
-     
+
+         
+        
             PostCartItems items = new(cartDto);
             var databaseItem = await _mediator.Send(items);
             //this has to match one of the routes below  !
             return CreatedAtAction("ReturnCartItemsByName", new { nameoncard = databaseItem.Name}, databaseItem);
+        }
+
+        public class CartItems
+        {
+            [Required]
+            public string Name { get; set; }
+            public double Price { get; set; }   
         }
         
 
@@ -89,6 +130,7 @@ namespace API.Controllers
         [HttpGet("CartItems")]
         public async Task<ActionResult<List<CartDTO>>> GetCartItems()
         {
+            _logger.LogInformation(CheckItemPrices("Egg Roll Platter").ToString());
             GetAllCartItems getallcartitems = new GetAllCartItems(); 
             var listCartItems = await _mediator.Send(getallcartitems);
             return Ok(listCartItems);
@@ -100,15 +142,15 @@ namespace API.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpGet("ReturnCartItemsByName")]
-        public async Task<ActionResult<IEnumerable<CartDTO>>> ReturnCartItemsByName([FromQuery] string nameoncard)
+        public async Task<ActionResult<IEnumerable<CartDTO>>> ReturnCartItemsByName([FromQuery] string nameonCard)
         {
          
-            if (string.IsNullOrEmpty(nameoncard))
+            if (string.IsNullOrEmpty(nameonCard))
             {
-                return BadRequest(nameof(nameoncard));    
+                return BadRequest(nameof(nameonCard));    
             }
 
-            GetAllCartItemsByName name= new GetAllCartItemsByName(nameoncard);
+            GetAllCartItemsByName name= new GetAllCartItemsByName(nameonCard);
             var allCartItems = await _mediator.Send(name);
             
             
@@ -118,6 +160,29 @@ namespace API.Controllers
             }
             return Ok(allCartItems);
         }
+
+        //enums cannot hold 
+        struct ItemPrices
+        {
+            public const double TofuStirFry = 10.5;
+            public const double EggRollPlatter = 10.5;
+            public const double PapayaSalad = 10.5;
+        }
+
+        public static double CheckItemPrices(string itemname)
+        {
+            switch (itemname)
+            {
+                case "Egg Roll Platter":
+                    return ItemPrices.EggRollPlatter;
+                case "Papaya Salad":
+                    return ItemPrices.PapayaSalad;
+                case "Tofu Stir Fry":
+                    return ItemPrices.TofuStirFry;
+                default: return 0; 
+            }
+        }
+    
         
     }
 }

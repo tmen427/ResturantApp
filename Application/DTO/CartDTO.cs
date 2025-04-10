@@ -12,7 +12,7 @@ namespace Resturant.Application.DTO
     //a dto can have some sort of validation 
     public class CartDTO 
     {
-        public CartDTO(string items, int prices, string name)
+        public CartDTO(List<string> items, double prices, string name)
         {
             Items = items;
             Prices = prices;
@@ -27,9 +27,10 @@ namespace Resturant.Application.DTO
         
         [Required]
         [MinLength(2)]
-        public string Items { get; set;  }
+        public List<string> Items { get; set;  }
         [Required]
-        public int Prices { get; set; }
+        [Range(0.1 , double.MaxValue, ErrorMessage = "The value must be greater than 0")]
+        public double Prices { get; set; }
         [Required]
         [MinLength(2)]
         public string  Name { get; set;  }   

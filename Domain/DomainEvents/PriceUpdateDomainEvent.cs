@@ -9,10 +9,10 @@ namespace Resturant.Domain.DomainEvents
 {
     public class PriceUpdateDomainEvent :INotification
     {
-       public int Price {  get; set; }   
+       public double Price {  get; set; }   
        public Guid Id { get; set; }
 
-        public PriceUpdateDomainEvent(int price, Guid id)
+        public PriceUpdateDomainEvent(double price, Guid id)
         {
             Price = price;
             Id = id;

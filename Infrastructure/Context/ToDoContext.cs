@@ -25,9 +25,12 @@ namespace Resturant.Infrastructure.Context
         public DbSet<OrderInformation> OrderInformation { get; set; }
 
         //   public DbSet<DomainEvent> DomainEvents { get; set; }    
-
-
+        
+        
         public DbSet<Event> Events { get; set; } 
+        
+       public DbSet<TemporaryCartItems> TemporaryCartItems { get; set; }
+
 
         public DbSet<CartItems> CartItems { get; set; } 
         public DbSet<Contact> Contacts { get; set; }
@@ -81,6 +84,12 @@ namespace Resturant.Infrastructure.Context
 
             modelBuilder.Entity<CartItems>().OwnsOne(p => p.Name);
             modelBuilder.Entity<CartItems>().HasKey(x => x.Id);
+            //
+            modelBuilder.Entity<TemporaryCartItems>().HasMany(x => x.MenuItems);
+          
+          
+             
+           //  modelBuilder.Entity<TemporaryCartItems>().HasKey(x => x.Id);
             modelBuilder.Entity<DomainEvent>().HasKey(x => x.Id);
             modelBuilder.Entity<Event>().HasKey(x => x.Id);
         }
