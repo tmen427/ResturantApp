@@ -41,8 +41,21 @@ namespace API.Controllers
             public double Price { get; set; }   
         }
         
+              
+        [HttpGet("GetAllTempItems")]
+        public async Task<List<MenuDTO>> TemporaryCartItems()
+        {
+            //only return a specific guid 
+            var menuDTO =  await  _context.TemporaryCartItems.Include("MenuItems")
+                .Where(x => x.Indentity.ToString() != string.Empty)
+                .SelectMany(x => x.MenuItems)
+                .Select(x => new MenuDTO() { Name = x.Name, Price = x.Price, GuidId = x.TemporaryCartItemsIndentity.ToString() }).ToListAsync();
+            
+            return menuDTO; 
+        }
         
-        [HttpGet("getbyGuid")]
+        
+        [HttpGet("GetMenuItemByGuid")]
         public async Task<List<MenuDTO>> TemporaryCartItemByGuid(string GuidId)
         {
             //only return a specific guid 
@@ -54,56 +67,52 @@ namespace API.Controllers
             return menuDTO; 
         }
         
-        
-        [HttpGet("gettemp")]
-        public async Task<List<MenuDTO>> TemporaryCartItems()
-        {
-            //only return a specific guid 
-            var menuDTO =  await  _context.TemporaryCartItems.Include("MenuItems")
-                .Where(x => x.Indentity.ToString() != string.Empty)
-                .SelectMany(x => x.MenuItems)
-                .Select(x => new MenuDTO() { Name = x.Name, Price = x.Price, GuidId = x.TemporaryCartItemsIndentity.ToString() }).ToListAsync();
-            
-            return menuDTO; 
-        }
+  
 
         public class TempDto
         {
-        //    public DateTime Created { get; set; } = DateTime.UtcNow;
-            public Guid Id { get; set; } = Guid.NewGuid();
-            public string? Name { get; set; }
-            public double Price { get; set; }   
+            //need the guid-from the frontend 
+            public Guid Id { get; set; } = Guid.NewGuid(); 
+            public string Name { get; set; }
         }
         
         
         
-        [HttpPost("temporaryCartItems")]
+        [HttpPost("TemporaryCartItems")]
         public async Task<ActionResult<TempDto>> AddTempItems(TempDto dto)
         {
             
-            _logger.LogInformation(dto.Id.ToString());
-            //check if duplicate keys in database 
+            //check for duplicate keys in database 
           var identity  =  
               _context.TemporaryCartItems.FirstOrDefault(x=>x.Indentity == dto.Id);
             
-       //if identity is null, means it is the first time user is adding temporarycratitem
+       //if identity is null, means it is the first time user is Adding this menuItem
           if (identity is null)
           {
               //mapping 
               TemporaryCartItems temporaryCartItems = new TemporaryCartItems();
               temporaryCartItems.Indentity = dto.Id;
               temporaryCartItems.Created = DateTime.UtcNow;
-              temporaryCartItems.MenuItems.Add(new MenuItemsVO() { Name = dto.Name, Price = dto.Price });
+              
+              string Name = dto.Name;
+              double Price = CheckItemPrices(Name);
+              
+              //make a new temporaryCartItem
+              temporaryCartItems.MenuItems.Add(new MenuItemsVO() { Name = Name, Price = Price });
               await _context.AddAsync(temporaryCartItems);
               await _context.SaveChangesAsync();
-             //possibly add created a route here 
-              return Ok("a new temporary cart item had been made");
+         
+              return Ok("A new temporary cart item had been made");
           }
           else
           {
               _logger.LogInformation("the identity already exists");
               //if it exists already add to existinig 
-              MenuItemsVO tempDto = new MenuItemsVO() { Name = dto.Name, Price = dto.Price , TemporaryCartItemsIndentity = dto.Id };
+              string Name = dto.Name;
+              double Price = CheckItemPrices(Name);
+
+              //add to menuItems
+              MenuItemsVO tempDto = new MenuItemsVO() { Name = Name, Price = Price , TemporaryCartItemsIndentity = dto.Id };
               _context.MenuItems.Add(tempDto);
               await _context.SaveChangesAsync();
               return Ok("Another menu item has been added");
@@ -112,34 +121,34 @@ namespace API.Controllers
         }
         
         
-
-        public class CartItems
-        {
-            [Required]
-            public string Name { get; set; }
-            public double Price { get; set; }   
-        }
-        
-        
-
         struct ItemPrices
         {
             public const double TofuStirFry = 10.5;
-            public const double EggRollPlatter = 10.5;
-            public const double PapayaSalad = 10.5;
+            public const double EggRollPlatter = 14.95;
+            public const double PapayaSalad = 8.95;
+            public const double CaesarSalad = 12.95;
+            public const double ChoppedBeef = 12.95;
+            public const double VeggiePlatter = 8.95;
         }
 
-        public static double CheckItemPrices(string itemname)
+        public static double CheckItemPrices(string ItemName)
         {
-            switch (itemname)
+            
+            switch (ItemName)
             {
                 case "Egg Roll Platter":
                     return ItemPrices.EggRollPlatter;
                 case "Papaya Salad":
                     return ItemPrices.PapayaSalad;
-                case "Tofu Stir Fry":
+                case "Tofu":
                     return ItemPrices.TofuStirFry;
-                default: return 0; 
+                case "Caesar Salad":
+                    return ItemPrices.CaesarSalad;
+                case "Chopped Beef":    
+                    return ItemPrices.ChoppedBeef;
+                case "Veggie Platter":
+                     return ItemPrices.VeggiePlatter;  
+                default: throw new Exception("That is not a valid item name-" +  nameof(ItemName));
             }
         }
     
