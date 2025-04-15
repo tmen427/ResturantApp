@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Resturant.Domain.Entity;
 
 public class TemporaryCartItems
@@ -9,6 +11,7 @@ public class TemporaryCartItems
     public DateTime Created { get; set; }
     
     //public Guid Identity { get; set; }
+   // [JsonIgnore]
     public ICollection<MenuItemsVO> MenuItems {get;set;} = new List<MenuItemsVO>();
 }
 

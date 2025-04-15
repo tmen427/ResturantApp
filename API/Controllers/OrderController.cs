@@ -7,7 +7,7 @@ using Resturant.Domain.Entity;
 
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-
+using Newtonsoft.Json;
 using Resturant.Infrastructure.Context;
 
 
@@ -40,17 +40,26 @@ namespace API.Controllers
             public string? Name { get; set; }
             public double Price { get; set; }   
         }
+
+        [HttpGet("tempsmenu")]
+
+        public async Task<List<TemporaryCartItems>> GetTempsmenu()
+        {
+            var TempCartItems1 = await _context.TemporaryCartItems.Include("MenuItems").ToListAsync();
+            return TempCartItems1;
+        }   
+        
+        
         
               
         [HttpGet("GetAllTempItems")]
         public async Task<List<MenuDTO>> TemporaryCartItems()
         {
-            //only return a specific guid 
+          //only return a specific guid 
             var menuDTO =  await  _context.TemporaryCartItems.Include("MenuItems")
                 .Where(x => x.Indentity.ToString() != string.Empty)
                 .SelectMany(x => x.MenuItems)
                 .Select(x => new MenuDTO() { Name = x.Name, Price = x.Price, GuidId = x.TemporaryCartItemsIndentity.ToString() }).ToListAsync();
-            
             return menuDTO; 
         }
         
@@ -63,7 +72,6 @@ namespace API.Controllers
                 .Where(x => x.Indentity.ToString() == GuidId)
                 .SelectMany(x => x.MenuItems)
                 .Select(x => new MenuDTO() { Name = x.Name, Price = x.Price, GuidId = x.TemporaryCartItemsIndentity.ToString() }).ToListAsync();
-            
             return menuDTO; 
         }
         
@@ -81,7 +89,6 @@ namespace API.Controllers
         [HttpPost("TemporaryCartItems")]
         public async Task<ActionResult<TempDto>> AddTempItems(TempDto dto)
         {
-            
             //check for duplicate keys in database 
           var identity  =  
               _context.TemporaryCartItems.FirstOrDefault(x=>x.Indentity == dto.Id);

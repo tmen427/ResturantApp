@@ -18,6 +18,7 @@ using Resturant.Infrastructure.Context;
 using Resturant.Infrastructure.Repository;
 using Resturant.Domain.Entity;
 using System.Reflection;
+using System.Text.Json.Serialization;
 using MediatR;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Resturant.Application.Extension; 
@@ -36,6 +37,9 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve);
 
 builder.Services.AddTransient<IRepo<User>, UsersRepo>();
 //builder.Services.AddTransient<ExceptionHandlingMIddleware>();
