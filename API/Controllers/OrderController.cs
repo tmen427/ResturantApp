@@ -77,7 +77,7 @@ namespace API.Controllers
           var identity  =  
               _context.TemporaryCartItems.FirstOrDefault(x=>x.Indentity == dto.Id);
             
-       
+       //if identity is null, means it is the first time user is adding temporarycratitem
           if (identity is null)
           {
               //mapping 
@@ -97,7 +97,7 @@ namespace API.Controllers
               MenuItemsVO tempDto = new MenuItemsVO() { Name = dto.Name, Price = dto.Price , TemporaryCartItemsIndentity = dto.Id };
               _context.MenuItems.Add(tempDto);
               await _context.SaveChangesAsync();
-              return Ok("another menu item has been added");
+              return Ok("Another menu item has been added");
           }
 
         }
