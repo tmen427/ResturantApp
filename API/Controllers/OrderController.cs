@@ -1,4 +1,5 @@
 ﻿
+using System.Collections.Immutable;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
@@ -36,30 +37,72 @@ namespace API.Controllers
    
         }
 
+
+        public class MenuDTO
+        {
+            public string GuidId { get; set; }
+            public string? Name { get; set; }
+            public double Price { get; set; }   
+        }
+        
+        
         [HttpGet("gettemp")]
-        public List<TemporaryCartItems> TemporaryCartItems()
+        public async Task<List<MenuDTO>> TemporaryCartItems()
         {
+            //only return a specific guid 
+            var menuDTO =  await  _context.TemporaryCartItems.Include("MenuItems")
+                .Where(x => x.Indentity.ToString() != string.Empty)
+                .SelectMany(x => x.MenuItems)
+                .Select(x => new MenuDTO() { Name = x.Name, Price = x.Price, GuidId = x.TemporaryCartItemsIndentity.ToString() }).ToListAsync();
             
-        var x =   _context.TemporaryCartItems.Include("MenuItems").Any(x=>x.Indentity.ToString() == "3fa85f64-5717-4562-b3fc-2c963f66afa6");
+            return menuDTO; 
+        }
 
-        var p = _context.TemporaryCartItems.Include("MenuItems")
-            .Where(x => x.Indentity.ToString() == "3fa85f64-5717-4562-b3fc-2c963f66afa6").ToList(); 
-      //    return   _context.TemporaryCartItems.Include("MenuItems").ToList(); 
-      return p; 
+        public class TempDto
+        {
+            public DateTime Created { get; set; } = DateTime.UtcNow;
+            public Guid Id { get; set; } = Guid.NewGuid();
+            public string? Name { get; set; }
+            public double Price { get; set; }   
         }
         
         
-
+        
         [HttpPost("temporaryCartItems")]
-        public async Task AddTempItems(TemporaryCartItems temporaryCartItems)
+        public async Task<ActionResult<TempDto>> AddTempItems(TempDto dto)
         {
             
-           await  _context.AddAsync(temporaryCartItems);
-           await _context.SaveChangesAsync();
+            _logger.LogInformation(dto.Id.ToString());
+            //check if duplicate keys in database 
+          var identity  =  
+              _context.TemporaryCartItems.FirstOrDefault(x=>x.Indentity == dto.Id);
+            
+       
+          if (identity is null)
+          {
+              //mapping 
+              TemporaryCartItems temporaryCartItems = new TemporaryCartItems();
+              temporaryCartItems.Indentity = dto.Id;
+              temporaryCartItems.Created = dto.Created;
+              temporaryCartItems.MenuItems.Add(new MenuItemsVO() { Name = dto.Name, Price = dto.Price });
+              await _context.AddAsync(temporaryCartItems);
+              await _context.SaveChangesAsync();
+             //possibly add created a route here 
+              return Ok("a new temporary cart item had been made");
+          }
+          else
+          {
+              _logger.LogInformation("the identity already exists");
+              //if it exists already add to existinig 
+              MenuItemsVO tempDto = new MenuItemsVO() { Name = dto.Name, Price = dto.Price , TemporaryCartItemsIndentity = dto.Id };
+              _context.MenuItems.Add(tempDto);
+              await _context.SaveChangesAsync();
+              return Ok("another menu item has been added");
+          }
+
         }
         
-   
-
+        
         [ProducesResponseType(StatusCodes.Status201Created)]
         [HttpPost("action")]
         public async Task<ActionResult<CartDTO>> PostDto(CartDTO cartDto)

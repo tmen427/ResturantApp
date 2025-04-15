@@ -6,6 +6,8 @@ public class TemporaryCartItems
     
     public Guid Indentity { get; set; }
     
+    public DateTime Created { get; set; }
+    
     //public Guid Identity { get; set; }
     public ICollection<MenuItemsVO> MenuItems {get;set;} = new List<MenuItemsVO>();
 }

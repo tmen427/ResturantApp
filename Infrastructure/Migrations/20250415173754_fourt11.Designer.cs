@@ -13,8 +13,8 @@ using Resturant.Infrastructure.Context;
 namespace Resturant.Infrastructure.Migrations
 {
     [DbContext(typeof(ToDoContext))]
-    [Migration("20250410171500_first111")]
-    partial class first111
+    [Migration("20250415173754_fourt11")]
+    partial class fourt11
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -129,14 +129,14 @@ namespace Resturant.Infrastructure.Migrations
                     b.Property<double>("Price")
                         .HasColumnType("double precision");
 
-                    b.Property<int?>("TemporaryCartItemsId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("TemporaryCartItemsIndentity")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("TemporaryCartItemsId");
+                    b.HasIndex("TemporaryCartItemsIndentity");
 
-                    b.ToTable("MenuItemsVO");
+                    b.ToTable("MenuItems");
                 });
 
             modelBuilder.Entity("Resturant.Domain.Entity.OrderInformation", b =>
@@ -177,6 +177,9 @@ namespace Resturant.Infrastructure.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("Indentity")
                         .HasColumnType("uuid");
@@ -290,9 +293,14 @@ namespace Resturant.Infrastructure.Migrations
 
             modelBuilder.Entity("Resturant.Domain.Entity.MenuItemsVO", b =>
                 {
-                    b.HasOne("Resturant.Domain.Entity.TemporaryCartItems", null)
+                    b.HasOne("Resturant.Domain.Entity.TemporaryCartItems", "TemporaryCartItems")
                         .WithMany("MenuItems")
-                        .HasForeignKey("TemporaryCartItemsId");
+                        .HasForeignKey("TemporaryCartItemsIndentity")
+                        .HasPrincipalKey("Indentity")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("TemporaryCartItems");
                 });
 
             modelBuilder.Entity("Resturant.Domain.Entity.UserInformation", b =>

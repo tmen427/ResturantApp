@@ -8,7 +8,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Resturant.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class first : Migration
+    public partial class fourt11 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -110,11 +110,14 @@ namespace Resturant.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Indentity = table.Column<Guid>(type: "uuid", nullable: false),
+                    Created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_TemporaryCartItems", x => x.Id);
+                    table.UniqueConstraint("AK_TemporaryCartItems_Indentity", x => x.Indentity);
                 });
 
             migrationBuilder.CreateTable(
@@ -133,23 +136,23 @@ namespace Resturant.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "MenuItemsVO",
+                name: "MenuItems",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "text", nullable: true),
                     Price = table.Column<double>(type: "double precision", nullable: false),
-                    TemporaryCartItemsId = table.Column<int>(type: "integer", nullable: false)
+                    TemporaryCartItemsIndentity = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_MenuItemsVO", x => x.Id);
+                    table.PrimaryKey("PK_MenuItems", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_MenuItemsVO_TemporaryCartItems_TemporaryCartItemsId",
-                        column: x => x.TemporaryCartItemsId,
+                        name: "FK_MenuItems_TemporaryCartItems_TemporaryCartItemsIndentity",
+                        column: x => x.TemporaryCartItemsIndentity,
                         principalTable: "TemporaryCartItems",
-                        principalColumn: "Id",
+                        principalColumn: "Indentity",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -179,9 +182,9 @@ namespace Resturant.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_MenuItemsVO_TemporaryCartItemsId",
-                table: "MenuItemsVO",
-                column: "TemporaryCartItemsId");
+                name: "IX_MenuItems_TemporaryCartItemsIndentity",
+                table: "MenuItems",
+                column: "TemporaryCartItemsIndentity");
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserInformation_UserId",
@@ -209,7 +212,7 @@ namespace Resturant.Infrastructure.Migrations
                 name: "Events");
 
             migrationBuilder.DropTable(
-                name: "MenuItemsVO");
+                name: "MenuItems");
 
             migrationBuilder.DropTable(
                 name: "OrderInformation");

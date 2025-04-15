@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Resturant.Domain.Entity;
 
 
@@ -9,8 +11,13 @@ public class MenuItemsVO
     public string? Name { get; set; }
     public double Price { get; set; }
     
+
+    
   // public int TemporaryCartItemsId { get; set; } 
-  // public TemporaryCartItems TemporaryCartItems { get; set; }
+  [Required]
+  public TemporaryCartItems TemporaryCartItems { get; set; } 
+   public  Guid TemporaryCartItemsIndentity{ get; set; }
+   
 
     // public MenuItemsVO(string name, double price)
     // {
