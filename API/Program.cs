@@ -36,7 +36,7 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 
-builder.Services.AddTransient<IRepo<CartItems>, CartItemsRepo>();
+
 builder.Services.AddTransient<IRepo<User>, UsersRepo>();
 //builder.Services.AddTransient<ExceptionHandlingMIddleware>();
 

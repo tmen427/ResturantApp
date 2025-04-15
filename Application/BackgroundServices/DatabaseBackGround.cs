@@ -34,23 +34,23 @@ namespace Restuarant.Application.BackgrouondServices
                 using (var scope = _serviceProvider.CreateScope())
                 {
                     //the name of the class that holds the irepo, not the implementation of the class
-                    var ctx = scope.ServiceProvider.GetRequiredService<IRepo<CartItems>>();
-
-
-
-                    //  _guidy.Display(); 
-
-
-
-                    var p = await ctx.CartItemsAsync();  
-                    Console.WriteLine("hey i'm from the background service");
-                      foreach (var items in p)
-                    {
-                        await Console.Out.WriteLineAsync(items.Item?.ToString());
-                        if (items.Item?.ToString() == "Tofu") {
-                            await Console.Out.WriteLineAsync("send and email here if values are low");
-                        }
-                    } 
+                    // var ctx = scope.ServiceProvider.GetRequiredService<IRepo<CartItems>>();
+                    //
+                    //
+                    //
+                    // //  _guidy.Display(); 
+                    //
+                    //
+                    //
+                    // var p = await ctx.CartItemsAsync();  
+                    // Console.WriteLine("hey i'm from the background service");
+                    //   foreach (var items in p)
+                    // {
+                    //     await Console.Out.WriteLineAsync(items.Item?.ToString());
+                    //     if (items.Item?.ToString() == "Tofu") {
+                    //         await Console.Out.WriteLineAsync("send and email here if values are low");
+                    //     }
+                    // } 
                 }
 
                 _logger.LogInformation("hello my dude");

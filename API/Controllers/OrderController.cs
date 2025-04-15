@@ -4,16 +4,12 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 using Resturant.Domain.Entity;
-using Resturant.Application.Respository;
+
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Query.Internal;
-using Resturant.Application.HandleCart.Query;
-using Resturant.Application.HandleCart.Command;
-using Resturant.Application.DTO;
-using Resturant.Domain.DomainEvents;
+
 using Resturant.Infrastructure.Context;
-using Resturant.Application.DomainEventHandler;
+
 
 namespace API.Controllers
 {
@@ -46,6 +42,19 @@ namespace API.Controllers
         }
         
         
+        [HttpGet("getbyGuid")]
+        public async Task<List<MenuDTO>> TemporaryCartItemByGuid(string GuidId)
+        {
+            //only return a specific guid 
+            var menuDTO =  await  _context.TemporaryCartItems.Include("MenuItems")
+                .Where(x => x.Indentity.ToString() == GuidId)
+                .SelectMany(x => x.MenuItems)
+                .Select(x => new MenuDTO() { Name = x.Name, Price = x.Price, GuidId = x.TemporaryCartItemsIndentity.ToString() }).ToListAsync();
+            
+            return menuDTO; 
+        }
+        
+        
         [HttpGet("gettemp")]
         public async Task<List<MenuDTO>> TemporaryCartItems()
         {
@@ -60,7 +69,7 @@ namespace API.Controllers
 
         public class TempDto
         {
-            public DateTime Created { get; set; } = DateTime.UtcNow;
+        //    public DateTime Created { get; set; } = DateTime.UtcNow;
             public Guid Id { get; set; } = Guid.NewGuid();
             public string? Name { get; set; }
             public double Price { get; set; }   
@@ -83,7 +92,7 @@ namespace API.Controllers
               //mapping 
               TemporaryCartItems temporaryCartItems = new TemporaryCartItems();
               temporaryCartItems.Indentity = dto.Id;
-              temporaryCartItems.Created = dto.Created;
+              temporaryCartItems.Created = DateTime.UtcNow;
               temporaryCartItems.MenuItems.Add(new MenuItemsVO() { Name = dto.Name, Price = dto.Price });
               await _context.AddAsync(temporaryCartItems);
               await _context.SaveChangesAsync();
@@ -103,32 +112,6 @@ namespace API.Controllers
         }
         
         
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        [HttpPost("action")]
-        public async Task<ActionResult<CartDTO>> PostDto(CartDTO cartDto)
-        {
-            //store in dctionary righ tnow 
-            double total = 0; 
-            List<CartItems> cartItems = new List<CartItems>();
-            foreach (var item in cartDto.Items)
-            {
-                cartItems.Add(new  CartItems(){ Name = item, Price = CheckItemPrices(item)});
-                total += CheckItemPrices(item);
-            }
-
-            foreach (var item in cartItems)
-            {
-                _logger.LogInformation(item.Price.ToString() + " " + item.Name.ToString());
-                _logger.LogInformation(total.ToString());
-            }
-
-         
-        
-            PostCartItems items = new(cartDto);
-            var databaseItem = await _mediator.Send(items);
-            //this has to match one of the routes below  !
-            return CreatedAtAction("ReturnCartItemsByName", new { nameoncard = databaseItem.Name}, databaseItem);
-        }
 
         public class CartItems
         {
@@ -137,74 +120,8 @@ namespace API.Controllers
             public double Price { get; set; }   
         }
         
-
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [HttpPost("PostCart")]
-        public async Task<ActionResult<CartItems>> PostCart(CartDTO cartDto)
-        {
-            //this validation won't work if using data annotations
-            // Validation.ValidateWithRegex(cartItems.OrderInformationNameonCard); 
-
-            if (ModelState.IsValid)
-            {
-                _logger.LogInformation($"the model state is correct");
-                PostCartItems postcart = new(cartDto);
-                var databaseItem = await _mediator.Send(postcart);
-
-
-                //okay this works !
-               // PriceUpdateDomainEvent price = new PriceUpdateDomainEvent(prices, Guid.NewGuid());
-               // await _mediator.Publish(price); 
-
-             //   return  Ok(databaseItem);
-                return CreatedAtRoute("GetCart", new { Name = databaseItem.Name}, databaseItem);
-              //  return CreatedAtAction(databaseItem, postcart); 
-            }
-            else
-            {
-                _logger.LogError("CartItems not valid");
-                return BadRequest("the model is invalid");
-            }
-        }
-
-  
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [HttpGet("CartItems")]
-        public async Task<ActionResult<List<CartDTO>>> GetCartItems()
-        {
-            _logger.LogInformation(CheckItemPrices("Egg Roll Platter").ToString());
-            GetAllCartItems getallcartitems = new GetAllCartItems(); 
-            var listCartItems = await _mediator.Send(getallcartitems);
-            return Ok(listCartItems);
-        }
-
-
         
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [HttpGet("ReturnCartItemsByName")]
-        public async Task<ActionResult<IEnumerable<CartDTO>>> ReturnCartItemsByName([FromQuery] string nameonCard)
-        {
-         
-            if (string.IsNullOrEmpty(nameonCard))
-            {
-                return BadRequest(nameof(nameonCard));    
-            }
 
-            GetAllCartItemsByName name= new GetAllCartItemsByName(nameonCard);
-            var allCartItems = await _mediator.Send(name);
-            
-            
-            if (!allCartItems.Any())
-            {
-                return NotFound(); 
-            }
-            return Ok(allCartItems);
-        }
-
-        //enums cannot hold 
         struct ItemPrices
         {
             public const double TofuStirFry = 10.5;
