@@ -12,8 +12,8 @@ using Resturant.Infrastructure.Context;
 namespace Resturant.Infrastructure.Migrations
 {
     [DbContext(typeof(ToDoContext))]
-    [Migration("20250415202928_sixth")]
-    partial class sixth
+    [Migration("20250416204945_seven")]
+    partial class seven
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -131,6 +131,9 @@ namespace Resturant.Infrastructure.Migrations
 
                     b.Property<string>("NameonCard")
                         .HasColumnType("text");
+
+                    b.Property<Guid>("TempCartsIdentity")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("UserName")
                         .HasColumnType("text");

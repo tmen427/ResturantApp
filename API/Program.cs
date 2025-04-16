@@ -39,7 +39,7 @@ builder.Services.AddControllers();
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
-        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve);
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 
 builder.Services.AddTransient<IRepo<User>, UsersRepo>();
 //builder.Services.AddTransient<ExceptionHandlingMIddleware>();

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -8,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Resturant.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class fourt11 : Migration
+    public partial class seven : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -33,20 +32,6 @@ namespace Resturant.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "CartItems",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Item = table.Column<List<string>>(type: "text[]", nullable: false),
-                    Price = table.Column<double>(type: "double precision", nullable: false),
-                    Name_FirstName = table.Column<string>(type: "text", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_CartItems", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Contacts",
                 columns: table => new
                 {
@@ -60,17 +45,6 @@ namespace Resturant.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Contacts", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "DomainEvent",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_DomainEvent", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -98,7 +72,8 @@ namespace Resturant.Infrastructure.Migrations
                     CreditCardNumber = table.Column<string>(type: "text", nullable: true),
                     Expiration = table.Column<string>(type: "text", nullable: true),
                     CVV = table.Column<string>(type: "text", nullable: true),
-                    UserName = table.Column<string>(type: "text", nullable: true)
+                    UserName = table.Column<string>(type: "text", nullable: true),
+                    TempCartsIdentity = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -200,13 +175,7 @@ namespace Resturant.Infrastructure.Migrations
                 name: "BookingInformation");
 
             migrationBuilder.DropTable(
-                name: "CartItems");
-
-            migrationBuilder.DropTable(
                 name: "Contacts");
-
-            migrationBuilder.DropTable(
-                name: "DomainEvent");
 
             migrationBuilder.DropTable(
                 name: "Events");

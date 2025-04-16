@@ -129,6 +129,9 @@ namespace Resturant.Infrastructure.Migrations
                     b.Property<string>("NameonCard")
                         .HasColumnType("text");
 
+                    b.Property<Guid>("TempCartsIdentity")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("UserName")
                         .HasColumnType("text");
 

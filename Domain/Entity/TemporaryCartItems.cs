@@ -10,9 +10,11 @@ public class TemporaryCartItems
     
     public DateTime Created { get; set; }
     
-    //public Guid Identity { get; set; }
-   // [JsonIgnore]
-    public ICollection<MenuItemsVO> MenuItems {get;set;} = new List<MenuItemsVO>();
+    public List<MenuItemsVO> MenuItems {get;set;} = new List<MenuItemsVO>();
+    
+    //child to parent - one to one 
+  //  public OrderInformation OrderInformation { get; set; } = null!;
+  //  public int? OrderInformationId { get; set; } 
 }
 
 

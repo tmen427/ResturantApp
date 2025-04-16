@@ -41,13 +41,12 @@ namespace API.Controllers
             public double Price { get; set; }   
         }
 
-        [HttpGet("tempsmenu")]
-
-        public async Task<List<TemporaryCartItems>> GetTempsmenu()
-        {
-            var TempCartItems1 = await _context.TemporaryCartItems.Include("MenuItems").ToListAsync();
-            return TempCartItems1;
-        }   
+        // [HttpGet("TempsMenuRaw")]
+        // public async Task<List<TemporaryCartItems>> GetTempsmenu()
+        // {
+        //     var TempCartItems1 = await _context.TemporaryCartItems.Include("MenuItems").ToListAsync();
+        //     return TempCartItems1;
+        // }   
         
         
         
@@ -65,7 +64,7 @@ namespace API.Controllers
         
         
         [HttpGet("GetMenuItemByGuid")]
-        public async Task<List<MenuDTO>> TemporaryCartItemByGuid(string GuidId)
+        public async Task<List<MenuDTO>> TemporaryCartItemByGuid(string GuidId = "3fa85f64-5717-4562-b3fc-2c963f66afa6")
         {
             //only return a specific guid 
             var menuDTO =  await  _context.TemporaryCartItems.Include("MenuItems")
@@ -100,6 +99,7 @@ namespace API.Controllers
               TemporaryCartItems temporaryCartItems = new TemporaryCartItems();
               temporaryCartItems.Indentity = dto.Id;
               temporaryCartItems.Created = DateTime.UtcNow;
+
               
               string Name = dto.Name;
               double Price = CheckItemPrices(Name);
