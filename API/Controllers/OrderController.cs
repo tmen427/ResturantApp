@@ -84,6 +84,8 @@ namespace API.Controllers
         }
         
         
+        //todo-add add check on orderinformation bool check to see if you user has already paid for the object or not
+        //if the user has not paid they can keep adding menuitems, if already paid they cannot add anymore items
         
         [HttpPost("TemporaryCartItems")]
         public async Task<ActionResult<TempDto>> AddTempItems(TempDto dto)
@@ -114,7 +116,7 @@ namespace API.Controllers
           else
           {
               _logger.LogInformation("the identity already exists");
-              //if it exists already add to existinig 
+              //if it exists already add to existing
               string Name = dto.Name;
               double Price = CheckItemPrices(Name);
 
