@@ -29,7 +29,11 @@ namespace API.Controllers
         {
             //use a dto to get menu items also 
             var orders = await _context.OrderInformation.ToListAsync();
-            return  Ok(orders);
+            if (orders is not null)
+            {
+                return Ok(orders);
+            }
+            else return NoContent();
         }
 
         
@@ -44,22 +48,22 @@ namespace API.Controllers
         [HttpGet("GetAllOrdersWithMenu")]
         public async Task<ActionResult<ViewsDto>> GetAllOrdersWith( [FromQuery] string orderGuid = "3fa85f64-5717-4562-b3fc-2c963f66afa6")
         {
-       
-           //merge the 2 different contexts
-     
+            //merge the 2 diffeent contexts 
             var orders = await _context.OrderInformation.SingleOrDefaultAsync(x => x.TempCartsIdentity.ToString() == orderGuid); 
-       
-            
-            //get the menu items by query by guid 
-              var menuDto = await _context.TemporaryCartItems.Include("MenuItems")
+    
+            var menuDto = await _context.TemporaryCartItems.Include("MenuItems")
                 .Where(x => x.Indentity.ToString() == orderGuid)
                 .SelectMany(x => x.MenuItems).ToListAsync();
-             
-              ViewsDto view = new ViewsDto();
-              view.Name = orders.UserName;
-              view.MenuItems = menuDto; 
-              
-              return Ok(view);
+
+            if (orders != null && menuDto != null)
+            {
+                ViewsDto view = new ViewsDto();
+                view.Name = orders.UserName;
+                view.MenuItems = menuDto;
+
+                return Ok(view);
+            }
+            else return NoContent();
         }
         
         
@@ -75,13 +79,13 @@ namespace API.Controllers
             if (orders is not null)
             {
                 //orders should be null, because nom other user should have created rhe value yet 
-                throw new Exception("An order is already present");
+              //  throw new Exception("An order is already present");
+              return BadRequest("the order has already been processed(paid)");
             }
             
             var tempmenuwithguid = await _context.TemporaryCartItems.FirstOrDefaultAsync(x=>x.Indentity.ToString() == orderGuid);
-
             
-            //also need to make sure that there isn't two seperate people buying the same menu items 
+            //each guid has to be unique! if you have a duplicate guid then 2 users will get the same menuItems
             if (tempmenuwithguid is not null)
             {
                 OrderInformation order = new OrderInformation()

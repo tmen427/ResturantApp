@@ -75,34 +75,25 @@ namespace API.Controllers
         [HttpPost("TemporaryCartItems")]
         public async Task<ActionResult<TempDto>> AddTempItems(TempDto dto)
         {
+            var identity = 
+                await  _context.TemporaryCartItems.SingleOrDefaultAsync(x => x.Indentity == dto.GuidId);
             
-            //check for duplicate keys in database 
-            var identity =
-             await  _context.TemporaryCartItems.FirstOrDefaultAsync(x => x.Indentity == dto.GuidId);
-
-            bool truthy = false; 
-          //check if user has already paid, if they have won't be able to add more items to cart
-          //first pass will be not work because guid has not been created yet 
-      
-             var paid = await _context.OrderInformation.FirstOrDefaultAsync(x => x.TempCartsIdentity == dto.GuidId);
-        //if orderinforamtion exists it means you already payed!
-     
-
-      
-       //if identity is null, means it is the first time user is Adding this menuItem
-        //if truthy is false then 
+             //check if user has already paid, if they have won't be able to add more items to cart
+              //if orderinforamtion exists it means you already payed!
+            var paid = await _context.OrderInformation.SingleOrDefaultAsync(x => x.TempCartsIdentity == dto.GuidId);
+            
+       //if identity is null, means it is the first time user
+        //if paid is null means you haven't paid yet and can still add items 
           if (identity is null && paid is null )
           {
               //mapping 
               TemporaryCartItems temporaryCartItems = new TemporaryCartItems();
               temporaryCartItems.Indentity = dto.GuidId;
               temporaryCartItems.Created = DateTime.UtcNow;
-
               
               string Name = dto.Name;
               double Price = CheckItemPrices(Name);
               
-              //make a new temporaryCartItem
               temporaryCartItems.MenuItems.Add(new MenuItemsVO() { Name = Name, Price = Price });
               await _context.AddAsync(temporaryCartItems);
               await _context.SaveChangesAsync();
@@ -111,8 +102,7 @@ namespace API.Controllers
           }
           else if (identity != null && paid is null)
           {
-              _logger.LogInformation("the identity already exists");
-              //if it exists already add to existing
+              
               string Name = dto.Name;
               double Price = CheckItemPrices(Name);
 
@@ -124,9 +114,8 @@ namespace API.Controllers
           }
           else
           {
-              return BadRequest("already paid!!!");
+              return BadRequest("the user has already paid!!!");
           }
-        
 
         }
         
@@ -158,7 +147,7 @@ namespace API.Controllers
                     return ItemPrices.ChoppedBeef;
                 case "Veggie Platter":
                      return ItemPrices.VeggiePlatter;  
-                default: throw new Exception("That is not a valid item name-" +  nameof(ItemName));
+                default: throw new Exception("That is not a valid item name check " +  nameof(ItemName));
             }
         }
     

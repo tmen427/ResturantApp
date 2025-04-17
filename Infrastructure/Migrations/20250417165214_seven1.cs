@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Resturant.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class seven : Migration
+    public partial class seven1 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -73,6 +73,7 @@ namespace Resturant.Infrastructure.Migrations
                     Expiration = table.Column<string>(type: "text", nullable: true),
                     CVV = table.Column<string>(type: "text", nullable: true),
                     UserName = table.Column<string>(type: "text", nullable: true),
+                    Paid = table.Column<bool>(type: "boolean", nullable: false),
                     TempCartsIdentity = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
