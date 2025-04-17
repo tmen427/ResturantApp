@@ -21,16 +21,13 @@ namespace API.Controllers
         private readonly IMediator _mediator;
         private readonly ILogger<OrderController> _logger;
         private readonly ToDoContext _context; 
-      
-
-
+        
         public OrderController(IMediator mediatR, ILogger<OrderController> logger, ToDoContext context)
         {
 
             _mediator = mediatR ?? throw  new ArgumentNullException(nameof(mediatR));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));    
             _context = context ?? throw new ArgumentNullException(nameof(context)); 
-   
         }
 
 
@@ -40,15 +37,6 @@ namespace API.Controllers
             public string? Name { get; set; }
             public double Price { get; set; }   
         }
-
-        // [HttpGet("TempsMenuRaw")]
-        // public async Task<List<TemporaryCartItems>> GetTempsmenu()
-        // {
-        //     var TempCartItems1 = await _context.TemporaryCartItems.Include("MenuItems").ToListAsync();
-        //     return TempCartItems1;
-        // }   
-        
-        
         
               
         [HttpGet("GetAllTempItems")]
@@ -74,32 +62,40 @@ namespace API.Controllers
             return menuDTO; 
         }
         
-  
-
+        
         public class TempDto
         {
             //need the guid-from the frontend 
-            public Guid Id { get; set; } = Guid.NewGuid(); 
+            public Guid GuidId { get; set; } = Guid.NewGuid(); 
             public string Name { get; set; }
         }
         
         
-        //todo-add add check on orderinformation bool check to see if you user has already paid for the object or not
-        //if the user has not paid they can keep adding menuitems, if already paid they cannot add anymore items
         
         [HttpPost("TemporaryCartItems")]
         public async Task<ActionResult<TempDto>> AddTempItems(TempDto dto)
         {
-            //check for duplicate keys in database 
-          var identity  =  
-              _context.TemporaryCartItems.FirstOrDefault(x=>x.Indentity == dto.Id);
             
+            //check for duplicate keys in database 
+            var identity =
+             await  _context.TemporaryCartItems.FirstOrDefaultAsync(x => x.Indentity == dto.GuidId);
+
+            bool truthy = false; 
+          //check if user has already paid, if they have won't be able to add more items to cart
+          //first pass will be not work because guid has not been created yet 
+      
+             var paid = await _context.OrderInformation.FirstOrDefaultAsync(x => x.TempCartsIdentity == dto.GuidId);
+        //if orderinforamtion exists it means you already payed!
+     
+
+      
        //if identity is null, means it is the first time user is Adding this menuItem
-          if (identity is null)
+        //if truthy is false then 
+          if (identity is null && paid is null )
           {
               //mapping 
               TemporaryCartItems temporaryCartItems = new TemporaryCartItems();
-              temporaryCartItems.Indentity = dto.Id;
+              temporaryCartItems.Indentity = dto.GuidId;
               temporaryCartItems.Created = DateTime.UtcNow;
 
               
@@ -113,7 +109,7 @@ namespace API.Controllers
          
               return Ok("A new temporary cart item had been made");
           }
-          else
+          else if (identity != null && paid is null)
           {
               _logger.LogInformation("the identity already exists");
               //if it exists already add to existing
@@ -121,11 +117,16 @@ namespace API.Controllers
               double Price = CheckItemPrices(Name);
 
               //add to menuItems
-              MenuItemsVO tempDto = new MenuItemsVO() { Name = Name, Price = Price , TemporaryCartItemsIndentity = dto.Id };
+              MenuItemsVO tempDto = new MenuItemsVO() { Name = Name, Price = Price , TemporaryCartItemsIndentity = dto.GuidId };
               _context.MenuItems.Add(tempDto);
               await _context.SaveChangesAsync();
               return Ok("Another menu item has been added");
           }
+          else
+          {
+              return BadRequest("already paid!!!");
+          }
+        
 
         }
         

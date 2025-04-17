@@ -45,9 +45,8 @@ namespace API.Controllers
         public async Task<ActionResult<ViewsDto>> GetAllOrdersWith( [FromQuery] string orderGuid = "3fa85f64-5717-4562-b3fc-2c963f66afa6")
         {
        
-             // merge 2 
-            //get specific order person - query by the guid 
-            //single or default will throw an error if query contains more then one value  
+           //merge the 2 different contexts
+     
             var orders = await _context.OrderInformation.SingleOrDefaultAsync(x => x.TempCartsIdentity.ToString() == orderGuid); 
        
             
@@ -62,6 +61,8 @@ namespace API.Controllers
               
               return Ok(view);
         }
+        
+        
         
         [HttpPost("PaymentInformation")]
         public async Task<ActionResult<OrderInformation>> PostOrderInformation(OrderInformationDTO orderInformation,
@@ -92,6 +93,7 @@ namespace API.Controllers
                     CVV = orderInformation.CVV,
                     UserName = orderInformation.UserName,
                     TempCartsIdentity = newGuid,
+                    Paid = true
                 };
 
                 await _context.OrderInformation.AddAsync(order);
