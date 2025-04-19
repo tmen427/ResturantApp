@@ -46,24 +46,40 @@ namespace API.Controllers
         
         
         [HttpGet("GetAllOrdersWithMenu")]
-        public async Task<ActionResult<ViewsDto>> GetAllOrdersWith( [FromQuery] string orderGuid = "3fa85f64-5717-4562-b3fc-2c963f66afa6")
+        public async Task<ActionResult<ViewsDto>> GetAllOrdersWith([FromQuery] string orderGuid = "3fa85f64-5717-4562-b3fc-2c963f66afa6")
         {
-            //merge the 2 diffeent contexts 
-            var orders = await _context.OrderInformation.SingleOrDefaultAsync(x => x.TempCartsIdentity.ToString() == orderGuid); 
-    
-            var menuDto = await _context.TemporaryCartItems.Include("MenuItems")
-                .Where(x => x.Indentity.ToString() == orderGuid)
-                .SelectMany(x => x.MenuItems).ToListAsync();
+            
+                var orders =
+                    await _context.OrderInformation.SingleOrDefaultAsync(x =>
+                        x.TempCartsIdentity.ToString() == orderGuid);
+                
 
-            if (orders != null && menuDto != null)
-            {
-                ViewsDto view = new ViewsDto();
-                view.Name = orders.UserName;
-                view.MenuItems = menuDto;
+                //menuDto will always return a value-since you can't make an order without menuItems 
+                var menuDto = await _context.TemporaryCartItems.Include("MenuItems")
+                    .Where(x => x.Indentity.ToString() == orderGuid)
+                    .SelectMany(x => x.MenuItems).ToListAsync();
 
-                return Ok(view);
-            }
-            else return NoContent();
+
+                if (!menuDto.Any())
+                {
+                   _logger.LogCritical("the menu is empty");
+                   throw new Exception("the menu cannot be empty");
+                }
+                
+     
+                //the menuDTO value is never actually null
+                if (orders is not null)
+                {
+                    ViewsDto view = new ViewsDto();
+                    view.Name = orders.UserName;
+                    view.MenuItems = menuDto;
+
+                    return Ok(view);
+                }
+                //the returned null value 
+                else return BadRequest("There is no associated order");
+         
+
         }
         
         
