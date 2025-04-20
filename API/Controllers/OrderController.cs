@@ -40,29 +40,46 @@ namespace API.Controllers
         
               
         [HttpGet("GetAllTempItems")]
-        public async Task<List<MenuDTO>> TemporaryCartItems()
+        public async Task<ActionResult<List<MenuDTO>>> TemporaryCartItems()
         {
-          //only return a specific guid 
-            var menuDTO =  await  _context.TemporaryCartItems.Include("MenuItems")
+          
+            var menuDto =  await  _context.TemporaryCartItems.Include("MenuItems")
                 .Where(x => x.Indentity.ToString() != string.Empty)
                 .SelectMany(x => x.MenuItems)
                 .Select(x => new MenuDTO() { Name = x.Name, Price = x.Price, GuidId = x.TemporaryCartItemsIndentity.ToString() }).ToListAsync();
-            return menuDTO; 
+          
+            if(menuDto.Any()) {
+                return Ok(menuDto);
+            }
+            return NotFound("no value was found");
         }
-        
-        
+
+
         [HttpGet("GetMenuItemByGuid")]
-        public async Task<List<MenuDTO>> TemporaryCartItemByGuid(string GuidId = "3fa85f64-5717-4562-b3fc-2c963f66afa6")
+        public async Task<ActionResult<List<MenuDTO>>> TemporaryCartItemByGuid(
+            [FromQuery] string GuidId = "3fa85f64-5717-4562-b3fc-2c963f66afa6")
         {
-            //only return a specific guid 
-            var menuDTO =  await  _context.TemporaryCartItems.Include("MenuItems")
+
+
+            var menuDto = await _context.TemporaryCartItems.Include("MenuItems")
                 .Where(x => x.Indentity.ToString() == GuidId)
                 .SelectMany(x => x.MenuItems)
-                .Select(x => new MenuDTO() { Name = x.Name, Price = x.Price, GuidId = x.TemporaryCartItemsIndentity.ToString() }).ToListAsync();
-            return menuDTO; 
+                .Select(x => new MenuDTO()
+                    { Name = x.Name, Price = x.Price, GuidId = x.TemporaryCartItemsIndentity.ToString() })
+                .ToListAsync();
+
+            if (menuDto.Any())
+            {
+                return menuDto;
+            }
+        
+            return NotFound("No items were found");
+          
         }
-        
-        
+
+
+
+
         public class TempDto
         {
             //need the guid-from the frontend 
@@ -78,12 +95,10 @@ namespace API.Controllers
             var identity = 
                 await  _context.TemporaryCartItems.SingleOrDefaultAsync(x => x.Indentity == dto.GuidId);
             
-             //check if user has already paid, if they have won't be able to add more items to cart
-              //if orderinforamtion exists it means you already payed!
+     
+              //if orderinforamtion exists it means you already payed-or else the user would not have existed
             var paid = await _context.OrderInformation.SingleOrDefaultAsync(x => x.TempCartsIdentity == dto.GuidId);
             
-       //if identity is null, means it is the first time user
-        //if paid is null means you haven't paid yet and can still add items 
           if (identity is null && paid is null )
           {
               //mapping 
