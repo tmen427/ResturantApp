@@ -59,20 +59,28 @@ namespace API.Controllers
         public async Task<ActionResult<List<MenuDTO>>> TemporaryCartItemByGuid(
             [FromQuery] string GuidId = "3fa85f64-5717-4562-b3fc-2c963f66afa6")
         {
-
-
-            var menuDto = await _context.TemporaryCartItems.Include("MenuItems")
-                .Where(x => x.Indentity.ToString() == GuidId)
-                .SelectMany(x => x.MenuItems)
-                .Select(x => new MenuDTO()
-                    { Name = x.Name, Price = x.Price, GuidId = x.TemporaryCartItemsIndentity.ToString() })
-                .ToListAsync();
-
-            if (menuDto.Any())
+           //check for the guid here !  
+            var booly  = Guid.TryParse(GuidId, out var Result);
+            _logger.LogCritical(booly.ToString());
+            if (booly)
             {
-                return menuDto;
+                var menuDto = await _context.TemporaryCartItems.Include("MenuItems")
+                    .Where(x => x.Indentity.ToString() == Result.ToString())
+                    .SelectMany(x => x.MenuItems)
+                    .Select(x => new MenuDTO()
+                        { Name = x.Name, Price = x.Price, GuidId = x.TemporaryCartItemsIndentity.ToString() })
+                    .ToListAsync();
+
+                if (menuDto.Any())
+                {
+                    return menuDto;
+                }
             }
-        
+            else
+            {
+                return NotFound("Not a boolean value");
+            }
+
             return NotFound("No items were found");
           
         }
@@ -112,7 +120,7 @@ namespace API.Controllers
               temporaryCartItems.MenuItems.Add(new MenuItemsVO() { Name = Name, Price = Price });
               await _context.AddAsync(temporaryCartItems);
               await _context.SaveChangesAsync();
-         
+              return CreatedAtAction("TemporaryCartItemByGuid", new {dto.GuidId}, temporaryCartItems);
               return Ok("A new temporary cart item had been made");
           }
           else if (identity != null && paid is null)
@@ -125,7 +133,8 @@ namespace API.Controllers
               MenuItemsVO tempDto = new MenuItemsVO() { Name = Name, Price = Price , TemporaryCartItemsIndentity = dto.GuidId };
               _context.MenuItems.Add(tempDto);
               await _context.SaveChangesAsync();
-              return Ok("Another menu item has been added");
+              return CreatedAtAction("TemporaryCartItemByGuid", new {dto.Name}, tempDto);
+           //   return Ok("Another menu item has been added");
           }
           else
           {

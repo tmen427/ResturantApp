@@ -12,6 +12,7 @@
         
         public bool Paid { get; set; } = false;
         public Guid TempCartsIdentity { get; set; }
-        
+
+   
     }
 }

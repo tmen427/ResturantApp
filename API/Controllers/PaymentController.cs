@@ -40,45 +40,60 @@ namespace API.Controllers
 
         public class ViewsDto
         {
-            public string Name { get; set; } 
-            public List<MenuItemsVO> MenuItems { get; set; }
+            public required string Name { get; set; } 
+          //  public List<MenuItemsVO> MenuItems { get; set; }
+            
+            public Guid OrderId { get; set; }
+            public required List<MenuItemsVO>  Menus { get; set; }
         }
         
+        public class MenuDTO1
+        {
+            public string GuidId { get; set; }
+            public string? Name { get; set; }
+            public double Price { get; set; }   
+        }
+
+        
+        
+        
+        //TODO work on this controller in the near future
         
         [HttpGet("GetAllOrdersWithMenu")]
         public async Task<ActionResult<ViewsDto>> GetAllOrdersWith([FromQuery] string orderGuid = "3fa85f64-5717-4562-b3fc-2c963f66afa6")
         {
-            
-                var orders =
-                    await _context.OrderInformation.SingleOrDefaultAsync(x =>
-                        x.TempCartsIdentity.ToString() == orderGuid);
-                
-
+            //would it be possible to combine these 2 routes togethor ????
+                // var orders =
+                //     await _context.OrderInformation.SingleOrDefaultAsync(x =>
+                //         x.TempCartsIdentity.ToString() == orderGuid);
                 //menuDto will should always return a value-since you can't make an order without menuItems 
-                var menuDto = await _context.TemporaryCartItems.Include("MenuItems")
-                    .Where(x => x.Indentity.ToString() == orderGuid)
-                    .SelectMany(x => x.MenuItems).ToListAsync();
-
-
-                if (!menuDto.Any())
-                {
+            //    var menuDto = await _context.TemporaryCartItems.Include("MenuItems")
+              //      .Where(x => x.Indentity.ToString() == orderGuid).ToListAsync();
+                   // .SelectMany(x => x.MenuItems).ToListAsync();
+                //
+    
+                var orderList = await _context.OrderInformation.ToListAsync();
+                var tempList = await _context.TemporaryCartItems.Include("MenuItems").ToListAsync();
+                
               
-                   throw new Exception("The menu items does exists");
+            //join to the two tables above 
+                var joining = from x in orderList
+                    join temp in tempList on x.TempCartsIdentity equals temp.Indentity
+                    select new ViewsDto() { Name = x.UserName, OrderId = temp.Indentity,  Menus  = temp.MenuItems, };
+
+
+               var finalValue =  
+                   from x in joining 
+                   where x.OrderId.ToString() == orderGuid
+                   select new { UserName = x.Name, Items = x.Menus.Select(p => p.Name + ", " + p.Price), GuidId = x.OrderId.ToString() }; 
+               
+                
+                if (!finalValue.Any())
+                { 
+                 return NotFound("the menu item does not exist");
                 }
-
-
-                if (orders is not null)
-                {
-                    ViewsDto view = new ViewsDto();
-                    view.Name = orders.UserName;
-                    view.MenuItems = menuDto;
-
-                    return Ok(view);
-                }
-            
-                else return BadRequest("There is no associated order");
-         
-
+                return Ok(finalValue);
+                
         }
         
         
