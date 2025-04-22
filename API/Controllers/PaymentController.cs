@@ -29,49 +29,26 @@ namespace API.Controllers
         {
             //use a dto to get menu items also 
             var orders = await _context.OrderInformation.ToListAsync();
-            if (orders is not null)
+            if (orders.Any())
             {
                 return Ok(orders);
             }
-            else return NoContent();
+            else return  BadRequest("No orders were currently found in the database.");
         }
-
         
-
         public class ViewsDto
         {
             public required string Name { get; set; } 
-          //  public List<MenuItemsVO> MenuItems { get; set; }
-            
             public Guid OrderId { get; set; }
             public required List<MenuItemsVO>  Menus { get; set; }
         }
         
-        public class MenuDTO1
-        {
-            public string GuidId { get; set; }
-            public string? Name { get; set; }
-            public double Price { get; set; }   
-        }
-
         
-        
-        
-        //TODO work on this controller in the near future
-        
+        //TODO work on this controller in the near future-possibly use GroupBy
         [HttpGet("GetAllOrdersWithMenu")]
         public async Task<ActionResult<ViewsDto>> GetAllOrdersWith([FromQuery] string orderGuid = "3fa85f64-5717-4562-b3fc-2c963f66afa6")
         {
-            //would it be possible to combine these 2 routes togethor ????
-                // var orders =
-                //     await _context.OrderInformation.SingleOrDefaultAsync(x =>
-                //         x.TempCartsIdentity.ToString() == orderGuid);
-                //menuDto will should always return a value-since you can't make an order without menuItems 
-            //    var menuDto = await _context.TemporaryCartItems.Include("MenuItems")
-              //      .Where(x => x.Indentity.ToString() == orderGuid).ToListAsync();
-                   // .SelectMany(x => x.MenuItems).ToListAsync();
-                //
-    
+            //possibly use group by 
                 var orderList = await _context.OrderInformation.ToListAsync();
                 var tempList = await _context.TemporaryCartItems.Include("MenuItems").ToListAsync();
                 
@@ -90,7 +67,7 @@ namespace API.Controllers
                 
                 if (!finalValue.Any())
                 { 
-                 return NotFound("the menu item does not exist");
+                 return NotFound("The order does not exist or the order has not ben created yet");
                 }
                 return Ok(finalValue);
                 
@@ -103,20 +80,20 @@ namespace API.Controllers
             [FromQuery] string orderGuid = "3fa85f64-5717-4562-b3fc-2c963f66afa6")
         {
 
-            //check if the guid exists in any other paying users????/-it shouldn't but just in case 
+            //check if the guid for the order exists-it shouldn't but just in case 
             var orders = await _context.OrderInformation.FirstOrDefaultAsync(x=>x.TempCartsIdentity.ToString() == orderGuid);
-            if (orders is not null)
+           
+            if (orders != null)
             {
-                //orders should be null, because no other user should have created rhe value yet 
-              return BadRequest("the order has already been processed(paid)");
+                //Idempotent check-no other users should have already paid for the cartItems-if they have this error will popup 
+              return BadRequest("The order has already been processed-paid");
             }
             
-            var tempmenuwithguid = await _context.TemporaryCartItems.FirstOrDefaultAsync(x=>x.Indentity.ToString() == orderGuid);
-            
+            var cartGuid = await _context.TemporaryCartItems.FirstOrDefaultAsync(x=>x.Indentity.ToString() == orderGuid);
             
             var  convertStringToGuid =  Guid.TryParse(orderGuid, out var newGuid);
-            //each guid has to be unique! if you have a duplicate guid then 2 users will get the same menuItems
-            if (tempmenuwithguid is not null)
+            //we assume guid values will always be unique 
+            if (cartGuid is not null)
             {
                 OrderInformation order = new OrderInformation()
                 {

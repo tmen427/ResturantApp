@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Resturant.Infrastructure.Context;
@@ -11,9 +12,11 @@ using Resturant.Infrastructure.Context;
 namespace Resturant.Infrastructure.Migrations
 {
     [DbContext(typeof(ToDoContext))]
-    partial class ToDoContextModelSnapshot : ModelSnapshot
+    [Migration("20250422223449_seven11")]
+    partial class seven11
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -157,7 +160,7 @@ namespace Resturant.Infrastructure.Migrations
                     b.Property<Guid>("Indentity")
                         .HasColumnType("uuid");
 
-                    b.Property<double>("TotalPrice")
+                    b.Property<double>("Total")
                         .HasColumnType("double precision");
 
                     b.HasKey("Id");

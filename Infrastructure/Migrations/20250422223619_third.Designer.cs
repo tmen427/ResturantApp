@@ -12,8 +12,8 @@ using Resturant.Infrastructure.Context;
 namespace Resturant.Infrastructure.Migrations
 {
     [DbContext(typeof(ToDoContext))]
-    [Migration("20250417165214_seven1")]
-    partial class seven1
+    [Migration("20250422223619_third")]
+    partial class third
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -159,6 +159,9 @@ namespace Resturant.Infrastructure.Migrations
 
                     b.Property<Guid>("Indentity")
                         .HasColumnType("uuid");
+
+                    b.Property<double>("TotalPrice")
+                        .HasColumnType("double precision");
 
                     b.HasKey("Id");
 

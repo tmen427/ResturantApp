@@ -33,22 +33,38 @@ namespace API.Controllers
 
         public class MenuDTO
         {
+         //  public DateTime Date { get; set; }
             public string GuidId { get; set; }
             public string? Name { get; set; }
             public double Price { get; set; }   
         }
-        
+
+
+        [HttpGet("TempItemsTable")]
+        public async Task<IActionResult> TempCartItems()
+        {
+           // var tempCartItems = await _context.TemporaryCartItems.Include("MenuItems").ToListAsync();
+            var tempCartItems = await _context.TemporaryCartItems.Include("MenuItems").ToListAsync();
+            return Ok(tempCartItems);
+        }        
               
         [HttpGet("GetAllTempItems")]
         public async Task<ActionResult<List<MenuDTO>>> TemporaryCartItems()
         {
-          
-            var menuDto =  await  _context.TemporaryCartItems.Include("MenuItems")
+
+            var menuDto = await _context.TemporaryCartItems.Include("MenuItems")
                 .Where(x => x.Indentity.ToString() != string.Empty)
                 .SelectMany(x => x.MenuItems)
                 .Select(x => new MenuDTO() { Name = x.Name, Price = x.Price, GuidId = x.TemporaryCartItemsIndentity.ToString() }).ToListAsync();
-          
-            if(menuDto.Any()) {
+             
+             var sum = menuDto.Sum(x => x.Price);
+            
+             
+             //send this value to the to the backend somehow 
+             _logger.LogInformation($"Sum: {sum}");
+           
+             
+             if(menuDto.Any()) {
                 return Ok(menuDto);
             }
             return NotFound("no value was found");
@@ -57,15 +73,15 @@ namespace API.Controllers
 
         [HttpGet("GetMenuItemByGuid")]
         public async Task<ActionResult<List<MenuDTO>>> TemporaryCartItemByGuid(
-            [FromQuery] string GuidId = "3fa85f64-5717-4562-b3fc-2c963f66afa6")
+            [FromQuery] string guidId = "3fa85f64-5717-4562-b3fc-2c963f66afa6")
         {
-           //check for the guid here !  
-            var booly  = Guid.TryParse(GuidId, out var Result);
-            _logger.LogCritical(booly.ToString());
-            if (booly)
+       
+            var guidCheck  = Guid.TryParse(guidId, out var guidValue);
+    
+            if (guidCheck)
             {
                 var menuDto = await _context.TemporaryCartItems.Include("MenuItems")
-                    .Where(x => x.Indentity.ToString() == Result.ToString())
+                    .Where(x => x.Indentity.ToString() == guidValue.ToString())
                     .SelectMany(x => x.MenuItems)
                     .Select(x => new MenuDTO()
                         { Name = x.Name, Price = x.Price, GuidId = x.TemporaryCartItemsIndentity.ToString() })
@@ -78,7 +94,7 @@ namespace API.Controllers
             }
             else
             {
-                return NotFound("Not a boolean value");
+                return NotFound("Not a guid value");
             }
 
             return NotFound("No items were found");
@@ -90,9 +106,8 @@ namespace API.Controllers
 
         public class TempDto
         {
-            //need the guid-from the frontend 
             public Guid GuidId { get; set; } = Guid.NewGuid(); 
-            public string Name { get; set; }
+            public string? Name { get; set; }
         }
         
         
@@ -100,45 +115,65 @@ namespace API.Controllers
         [HttpPost("TemporaryCartItems")]
         public async Task<ActionResult<TempDto>> AddTempItems(TempDto dto)
         {
-            var identity = 
+            var checkNewMenuItem = 
                 await  _context.TemporaryCartItems.SingleOrDefaultAsync(x => x.Indentity == dto.GuidId);
             
-     
-              //if orderinforamtion exists it means you already payed-or else the user would not have existed
+            //if orderinforamtion exists it means you already payed-or else the user would not have existed
             var paid = await _context.OrderInformation.SingleOrDefaultAsync(x => x.TempCartsIdentity == dto.GuidId);
             
-          if (identity is null && paid is null )
+          if (checkNewMenuItem is null && paid is null )
           {
-              //mapping 
+             //update totalprice
+              var totalPriceMenuItems = 
+                  _context.TemporaryCartItems.Include("MenuItems").
+                      Where(x => x.Indentity == dto.GuidId).
+                      SelectMany(x=>x.MenuItems).
+                      Sum(x => x.Price); 
+              
+              
               TemporaryCartItems temporaryCartItems = new TemporaryCartItems();
               temporaryCartItems.Indentity = dto.GuidId;
               temporaryCartItems.Created = DateTime.UtcNow;
+              temporaryCartItems.TotalPrice = totalPriceMenuItems;
               
-              string Name = dto.Name;
-              double Price = CheckItemPrices(Name);
+              string name = dto.Name;
+              double price = CheckItemPrices(name);
               
-              temporaryCartItems.MenuItems.Add(new MenuItemsVO() { Name = Name, Price = Price });
+              temporaryCartItems.MenuItems.Add(new MenuItemsVO() { Name = name, Price = price });
+              
               await _context.AddAsync(temporaryCartItems);
               await _context.SaveChangesAsync();
+            
               return CreatedAtAction("TemporaryCartItemByGuid", new {dto.GuidId}, temporaryCartItems);
-              return Ok("A new temporary cart item had been made");
+            //  return Ok(temporaryCartItems);
           }
-          else if (identity != null && paid is null)
+          else if (checkNewMenuItem != null && paid is null)
           {
               
-              string Name = dto.Name;
-              double Price = CheckItemPrices(Name);
-
-              //add to menuItems
-              MenuItemsVO tempDto = new MenuItemsVO() { Name = Name, Price = Price , TemporaryCartItemsIndentity = dto.GuidId };
-              _context.MenuItems.Add(tempDto);
+              string name = dto.Name;
+              double price = CheckItemPrices(name);
+              
+              var menuItems = new MenuItemsVO() { Name = name, Price = price , TemporaryCartItemsIndentity = dto.GuidId };
+              _context.MenuItems.Add(menuItems);
+             await _context.SaveChangesAsync();
+           
+            //upddte the price-AFTER the menu Item has been saved to get the most up to date price
+              var totalPriceMenuItems = 
+                  _context.TemporaryCartItems.Include("MenuItems").
+                      Where(x => x.Indentity == dto.GuidId).
+                      SelectMany(x=>x.MenuItems).
+                      Sum(x => x.Price); 
+              
+              //update total 
+              checkNewMenuItem.TotalPrice = totalPriceMenuItems;
               await _context.SaveChangesAsync();
-              return CreatedAtAction("TemporaryCartItemByGuid", new {dto.Name}, tempDto);
-           //   return Ok("Another menu item has been added");
+        
+              return CreatedAtAction("TemporaryCartItemByGuid", new {dto.Name}, menuItems);
+      
           }
           else
           {
-              return BadRequest("the user has already paid!!!");
+              return BadRequest("This user has already paid!!!");
           }
 
         }
@@ -154,10 +189,10 @@ namespace API.Controllers
             public const double VeggiePlatter = 8.95;
         }
 
-        public static double CheckItemPrices(string ItemName)
+        static double CheckItemPrices(string itemName)
         {
             
-            switch (ItemName)
+            switch (itemName)
             {
                 case "Egg Roll Platter":
                     return ItemPrices.EggRollPlatter;
@@ -171,7 +206,7 @@ namespace API.Controllers
                     return ItemPrices.ChoppedBeef;
                 case "Veggie Platter":
                      return ItemPrices.VeggiePlatter;  
-                default: throw new Exception("That is not a valid item name check " +  nameof(ItemName));
+                default: throw new Exception("That is not a valid item name check " +  nameof(itemName));
             }
         }
     
