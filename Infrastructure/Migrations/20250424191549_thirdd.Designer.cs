@@ -12,8 +12,8 @@ using Resturant.Infrastructure.Context;
 namespace Resturant.Infrastructure.Migrations
 {
     [DbContext(typeof(ToDoContext))]
-    [Migration("20250422223619_third")]
-    partial class third
+    [Migration("20250424191549_thirdd")]
+    partial class thirdd
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

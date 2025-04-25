@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Resturant.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class seven11 : Migration
+    public partial class thirdd : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -89,7 +89,7 @@ namespace Resturant.Infrastructure.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Indentity = table.Column<Guid>(type: "uuid", nullable: false),
                     Created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    Total = table.Column<double>(type: "double precision", nullable: false)
+                    TotalPrice = table.Column<double>(type: "double precision", nullable: false)
                 },
                 constraints: table =>
                 {

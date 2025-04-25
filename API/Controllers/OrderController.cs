@@ -34,6 +34,7 @@ namespace API.Controllers
         public class MenuDTO
         {
          //  public DateTime Date { get; set; }
+            public int Id { get; set; } 
             public string GuidId { get; set; }
             public string? Name { get; set; }
             public double Price { get; set; }   
@@ -55,7 +56,7 @@ namespace API.Controllers
             var menuDto = await _context.TemporaryCartItems.Include("MenuItems")
                 .Where(x => x.Indentity.ToString() != string.Empty)
                 .SelectMany(x => x.MenuItems)
-                .Select(x => new MenuDTO() { Name = x.Name, Price = x.Price, GuidId = x.TemporaryCartItemsIndentity.ToString() }).ToListAsync();
+                .Select(x => new MenuDTO() { Id = x.Id, Name = x.Name, Price = x.Price, GuidId = x.TemporaryCartItemsIndentity.ToString() }).ToListAsync();
              
              var sum = menuDto.Sum(x => x.Price);
             
@@ -84,7 +85,7 @@ namespace API.Controllers
                     .Where(x => x.Indentity.ToString() == guidValue.ToString())
                     .SelectMany(x => x.MenuItems)
                     .Select(x => new MenuDTO()
-                        { Name = x.Name, Price = x.Price, GuidId = x.TemporaryCartItemsIndentity.ToString() })
+                        { Id = x.Id, Name = x.Name, Price = x.Price, GuidId = x.TemporaryCartItemsIndentity.ToString() })
                     .ToListAsync();
 
                 if (menuDto.Any())
@@ -94,32 +95,93 @@ namespace API.Controllers
             }
             else
             {
-                return NotFound("Not a guid value");
+                return Ok(0);
             }
-
-            return NotFound("No items were found");
-          
+            //even if nothing is found still return zero
+            int zero = 0; 
+            return Ok(zero); 
         }
+        
+        
+        [HttpGet("GetMenuItemByGuidSize")]
+        public async Task<ActionResult<int>> TemporaryCartItemByGuidSize(
+            [FromQuery] string guidId = "3fa85f64-5717-4562-b3fc-2c963f66afa6")
+        {
+       
+            var guidCheck  = Guid.TryParse(guidId, out var guidValue);
+    
+            if (guidCheck)
+            {
+                var menuDto = await _context.TemporaryCartItems.Include("MenuItems")
+                    .Where(x => x.Indentity.ToString() == guidValue.ToString())
+                    .SelectMany(x => x.MenuItems)
+                    .Select(x => new MenuDTO()
+                        { Id = x.Id, Name = x.Name, Price = x.Price, GuidId = x.TemporaryCartItemsIndentity.ToString() })
+                    .ToListAsync();
+
+                if (menuDto.Any())
+                {
+                    return Ok(menuDto.Count);
+                }
+            }
+            else
+            {
+                return Ok(0);
+            }
+            //even if nothing is found still return zero
+            int zero = 0; 
+            return Ok(zero); 
+        }
+
+        
+        
 
 
 
 
         public class TempDto
         {
-            public Guid GuidId { get; set; } = Guid.NewGuid(); 
+            public Guid GuidId { get; set; }
             public string? Name { get; set; }
         }
-        
-        
-        
+
+
+        [HttpGet("CreateGuide")]
+        public Guid MakeGuid()
+        {
+            var guid = Guid.NewGuid();
+            return guid;
+        }
+
+
+        [HttpDelete("Delete")]
+        //delete menuby
+        public async Task<ActionResult<MenuItemsVO>> ReturnDelete(int id)
+        {
+           var menuItem =   await _context.MenuItems.FindAsync(id); 
+           if (menuItem != null)
+           {
+               _context.MenuItems.Remove(menuItem);
+           }
+
+           await _context.SaveChangesAsync();
+           return Ok(menuItem);
+        }
+
+
         [HttpPost("TemporaryCartItems")]
+
+        //have the backend create the guid-that's a better approach then letting the frontend 
         public async Task<ActionResult<TempDto>> AddTempItems(TempDto dto)
         {
-            var checkNewMenuItem = 
-                await  _context.TemporaryCartItems.SingleOrDefaultAsync(x => x.Indentity == dto.GuidId);
+
+            var checkNewMenuItem =
+                await _context.TemporaryCartItems.SingleOrDefaultAsync(x => x.Indentity == dto.GuidId);
             
-            //if orderinforamtion exists it means you already payed-or else the user would not have existed
-            var paid = await _context.OrderInformation.SingleOrDefaultAsync(x => x.TempCartsIdentity == dto.GuidId);
+
+        //if orderinforamtion exists it means you already payed-(or else the user would not have existed)
+            var paid = 
+                await _context.OrderInformation.SingleOrDefaultAsync(x => x.TempCartsIdentity == dto.GuidId);
             
           if (checkNewMenuItem is null && paid is null )
           {
@@ -144,8 +206,9 @@ namespace API.Controllers
               await _context.AddAsync(temporaryCartItems);
               await _context.SaveChangesAsync();
             
-              return CreatedAtAction("TemporaryCartItemByGuid", new {dto.GuidId}, temporaryCartItems);
-            //  return Ok(temporaryCartItems);
+             // return CreatedAtAction("TemporaryCartItemByGuid", new {dto.GuidId}, temporaryCartItems);
+             return Ok(new { Name = name, Price = price });
+            // return Ok(temporaryCartItems);
           }
           else if (checkNewMenuItem != null && paid is null)
           {
@@ -157,7 +220,7 @@ namespace API.Controllers
               _context.MenuItems.Add(menuItems);
              await _context.SaveChangesAsync();
            
-            //upddte the price-AFTER the menu Item has been saved to get the most up to date price
+            //update totalprice-AFTER the menu Item has been saved to get the most up to date price
               var totalPriceMenuItems = 
                   _context.TemporaryCartItems.Include("MenuItems").
                       Where(x => x.Indentity == dto.GuidId).
@@ -168,8 +231,8 @@ namespace API.Controllers
               checkNewMenuItem.TotalPrice = totalPriceMenuItems;
               await _context.SaveChangesAsync();
         
-              return CreatedAtAction("TemporaryCartItemByGuid", new {dto.Name}, menuItems);
-      
+            //  return CreatedAtAction("TemporaryCartItemByGuid", new {dto.Name}, new {Name = name, Price = price});
+            return Ok(new { Name = name, Price = price });
           }
           else
           {
