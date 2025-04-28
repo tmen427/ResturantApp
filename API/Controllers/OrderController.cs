@@ -171,8 +171,6 @@ namespace API.Controllers
            //delete the item and calculate the new updated price 
            
            //update totalprice-AFTER the menu Item has been saved to get the most up to date price
-           //get the current temporarycartitem by guid 
-            //can put this in a second method-but it also makes sense to update the price here 
            var tempCartItem = await _context.TemporaryCartItems.FirstOrDefaultAsync(x => x.Indentity == guidId);
            
            var totalPriceMenuItems = 
@@ -180,11 +178,9 @@ namespace API.Controllers
                    Where(x => x.Indentity == guidId).
                    SelectMany(x=>x.MenuItems).
                    Sum(x => x.Price);
-
-           var roundTotalPriceMenuItems = Math.Round(totalPriceMenuItems, 2); 
-            _logger.LogCritical($"Total Price: {roundTotalPriceMenuItems}");
-           //the total price will be tracked by he changetracker 
-           tempCartItem.TotalPrice = (decimal)roundTotalPriceMenuItems;
+           
+            //update price 
+           tempCartItem.TotalPrice = totalPriceMenuItems;
 
            await _context.SaveChangesAsync();
            return Ok(menuItem);
@@ -199,31 +195,23 @@ namespace API.Controllers
             var checkNewMenuItem =
                 await _context.TemporaryCartItems.SingleOrDefaultAsync(x => x.Indentity == dto.GuidId);
             
-            //if orderinforamtion exists it means you already payed-(or else the user would not have existed)
+            //if paid exists means you have already paid
             var paid = 
                 await _context.OrderInformation.SingleOrDefaultAsync(x => x.TempCartsIdentity == dto.GuidId);
             
             //create a new menu item
           if (checkNewMenuItem is null && paid is null )
           {
-     
-              var totalPriceMenuItems = 
-                  _context.TemporaryCartItems.Include("MenuItems").
-                      Where(x => x.Indentity == dto.GuidId).
-                      SelectMany(x=>x.MenuItems).
-                      Sum(x => x.Price); 
-              
-              decimal converttotalPriceItems = (decimal)totalPriceMenuItems;
+      
+              string name = dto.Name!;
+              decimal price = CheckItemPrices(name);
+             
               TemporaryCartItems temporaryCartItems = new TemporaryCartItems();
               temporaryCartItems.Indentity = dto.GuidId;
               temporaryCartItems.Created = DateTime.UtcNow;
-              temporaryCartItems.TotalPrice = converttotalPriceItems;
-              
-              string name = dto.Name;
-              decimal price = CheckItemPrices(name);
-              
+              temporaryCartItems.TotalPrice = price;
+
               temporaryCartItems.MenuItems.Add(new MenuItemsVO() { Name = name, Price = price });
-              
               await _context.AddAsync(temporaryCartItems);
               await _context.SaveChangesAsync();
             
@@ -231,11 +219,11 @@ namespace API.Controllers
              return Ok(new { Name = name, Price = price });
             // return Ok(temporaryCartItems);
           }
-          //add MenuItems and calculate price
+   
           else if (checkNewMenuItem != null && paid is null)
           {
               
-              string name = dto.Name;
+              string name = dto.Name!;
               decimal price = CheckItemPrices(name);
               
               var menuItems = new MenuItemsVO() { Name = name, Price = price , TemporaryCartItemsIndentity = dto.GuidId };
