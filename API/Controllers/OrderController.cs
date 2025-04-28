@@ -37,17 +37,27 @@ namespace API.Controllers
             public int Id { get; set; } 
             public string GuidId { get; set; }
             public string? Name { get; set; }
-            public double Price { get; set; }   
+            public decimal Price { get; set; }   
         }
 
 
         [HttpGet("TempItemsTable")]
         public async Task<IActionResult> TempCartItems()
         {
-           // var tempCartItems = await _context.TemporaryCartItems.Include("MenuItems").ToListAsync();
-            var tempCartItems = await _context.TemporaryCartItems.Include("MenuItems").ToListAsync();
+           var tempCartItems = await _context.TemporaryCartItems.ToListAsync();
+          //  var tempCartItems = await _context.TemporaryCartItems.Include("MenuItems").ToListAsync();
             return Ok(tempCartItems);
-        }        
+        }       
+        
+        [HttpGet("GetTotalPrice")]
+        public async Task<IActionResult> GetTempsItemsTableByGuid(string guid)
+        {
+            var tempItemPrice = await _context.TemporaryCartItems.FirstOrDefaultAsync(x=>x.Indentity.ToString() == guid);
+            //  var tempCartItems = await _context.TemporaryCartItems.Include("MenuItems").ToListAsync();
+            return Ok(tempItemPrice);
+        }       
+
+        
               
         [HttpGet("GetAllTempItems")]
         public async Task<ActionResult<List<MenuDTO>>> TemporaryCartItems()
@@ -59,8 +69,7 @@ namespace API.Controllers
                 .Select(x => new MenuDTO() { Id = x.Id, Name = x.Name, Price = x.Price, GuidId = x.TemporaryCartItemsIndentity.ToString() }).ToListAsync();
              
              var sum = menuDto.Sum(x => x.Price);
-            
-             
+       
              //send this value to the to the backend somehow 
              _logger.LogInformation($"Sum: {sum}");
            
@@ -129,16 +138,10 @@ namespace API.Controllers
                 return Ok(0);
             }
             //even if nothing is found still return zero
-            int zero = 0; 
-            return Ok(zero); 
+   
+            return Ok(0); 
         }
-
         
-        
-
-
-
-
         public class TempDto
         {
             public Guid GuidId { get; set; }
@@ -154,15 +157,34 @@ namespace API.Controllers
         }
 
 
-        [HttpDelete("Delete")]
+        [HttpDelete("DeleteMenuItem")]
         //delete menuby
-        public async Task<ActionResult<MenuItemsVO>> ReturnDelete(int id)
+        public async Task<ActionResult<MenuItemsVO>> ReturnDelete(int id, Guid guidId)
         {
            var menuItem =   await _context.MenuItems.FindAsync(id); 
            if (menuItem != null)
            {
                _context.MenuItems.Remove(menuItem);
            }
+           //save changes needs to be called here
+           await _context.SaveChangesAsync();
+           //delete the item and calculate the new updated price 
+           
+           //update totalprice-AFTER the menu Item has been saved to get the most up to date price
+           //get the current temporarycartitem by guid 
+            //can put this in a second method-but it also makes sense to update the price here 
+           var tempCartItem = await _context.TemporaryCartItems.FirstOrDefaultAsync(x => x.Indentity == guidId);
+           
+           var totalPriceMenuItems = 
+               _context.TemporaryCartItems.Include("MenuItems").
+                   Where(x => x.Indentity == guidId).
+                   SelectMany(x=>x.MenuItems).
+                   Sum(x => x.Price);
+
+           var roundTotalPriceMenuItems = Math.Round(totalPriceMenuItems, 2); 
+            _logger.LogCritical($"Total Price: {roundTotalPriceMenuItems}");
+           //the total price will be tracked by he changetracker 
+           tempCartItem.TotalPrice = (decimal)roundTotalPriceMenuItems;
 
            await _context.SaveChangesAsync();
            return Ok(menuItem);
@@ -171,35 +193,34 @@ namespace API.Controllers
 
         [HttpPost("TemporaryCartItems")]
 
-        //have the backend create the guid-that's a better approach then letting the frontend 
+
         public async Task<ActionResult<TempDto>> AddTempItems(TempDto dto)
         {
-
             var checkNewMenuItem =
                 await _context.TemporaryCartItems.SingleOrDefaultAsync(x => x.Indentity == dto.GuidId);
             
-
-        //if orderinforamtion exists it means you already payed-(or else the user would not have existed)
+            //if orderinforamtion exists it means you already payed-(or else the user would not have existed)
             var paid = 
                 await _context.OrderInformation.SingleOrDefaultAsync(x => x.TempCartsIdentity == dto.GuidId);
             
+            //create a new menu item
           if (checkNewMenuItem is null && paid is null )
           {
-             //update totalprice
+     
               var totalPriceMenuItems = 
                   _context.TemporaryCartItems.Include("MenuItems").
                       Where(x => x.Indentity == dto.GuidId).
                       SelectMany(x=>x.MenuItems).
                       Sum(x => x.Price); 
               
-              
+              decimal converttotalPriceItems = (decimal)totalPriceMenuItems;
               TemporaryCartItems temporaryCartItems = new TemporaryCartItems();
               temporaryCartItems.Indentity = dto.GuidId;
               temporaryCartItems.Created = DateTime.UtcNow;
-              temporaryCartItems.TotalPrice = totalPriceMenuItems;
+              temporaryCartItems.TotalPrice = converttotalPriceItems;
               
               string name = dto.Name;
-              double price = CheckItemPrices(name);
+              decimal price = CheckItemPrices(name);
               
               temporaryCartItems.MenuItems.Add(new MenuItemsVO() { Name = name, Price = price });
               
@@ -210,11 +231,12 @@ namespace API.Controllers
              return Ok(new { Name = name, Price = price });
             // return Ok(temporaryCartItems);
           }
+          //add MenuItems and calculate price
           else if (checkNewMenuItem != null && paid is null)
           {
               
               string name = dto.Name;
-              double price = CheckItemPrices(name);
+              decimal price = CheckItemPrices(name);
               
               var menuItems = new MenuItemsVO() { Name = name, Price = price , TemporaryCartItemsIndentity = dto.GuidId };
               _context.MenuItems.Add(menuItems);
@@ -225,9 +247,8 @@ namespace API.Controllers
                   _context.TemporaryCartItems.Include("MenuItems").
                       Where(x => x.Indentity == dto.GuidId).
                       SelectMany(x=>x.MenuItems).
-                      Sum(x => x.Price); 
-              
-              //update total 
+                      Sum(x => x.Price);
+
               checkNewMenuItem.TotalPrice = totalPriceMenuItems;
               await _context.SaveChangesAsync();
         
@@ -241,18 +262,17 @@ namespace API.Controllers
 
         }
         
-        
         struct ItemPrices
         {
-            public const double TofuStirFry = 10.5;
-            public const double EggRollPlatter = 14.95;
-            public const double PapayaSalad = 8.95;
-            public const double CaesarSalad = 12.95;
-            public const double ChoppedBeef = 12.95;
-            public const double VeggiePlatter = 8.95;
+            public const decimal TofuStirFry = (decimal) 10.5;
+            public const decimal EggRollPlatter = (decimal) 14.95;
+            public const decimal PapayaSalad = (decimal) 8.95;
+            public const decimal CaesarSalad = (decimal) 8.95;
+            public const decimal ChoppedBeef = (decimal) 12.95;
+            public const decimal VeggiePlatter = (decimal) 8.95;
         }
 
-        static double CheckItemPrices(string itemName)
+        static decimal CheckItemPrices(string itemName)
         {
             
             switch (itemName)
