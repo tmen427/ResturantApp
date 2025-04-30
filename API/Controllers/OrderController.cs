@@ -44,8 +44,8 @@ namespace API.Controllers
         [HttpGet("TempItemsTable")]
         public async Task<IActionResult> TempCartItems()
         {
-           var tempCartItems = await _context.TemporaryCartItems.ToListAsync();
-          //  var tempCartItems = await _context.TemporaryCartItems.Include("MenuItems").ToListAsync();
+         //  var tempCartItems = await _context.TemporaryCartItems.ToListAsync();
+            var tempCartItems = await _context.TemporaryCartItems.Include("MenuItems").ToListAsync();
             return Ok(tempCartItems);
         }       
         

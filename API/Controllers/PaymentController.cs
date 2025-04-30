@@ -76,12 +76,11 @@ namespace API.Controllers
         
         
         [HttpPost("PaymentInformation")]
-        public async Task<ActionResult<OrderInformation>> PostOrderInformation(OrderInformationDTO orderInformation,
-            [FromQuery] string orderGuid = "3fa85f64-5717-4562-b3fc-2c963f66afa6")
+        public async Task<ActionResult<OrderInformation>> PostOrderInformation(OrderInformationDTO orderInformation)
         {
 
             //check if the guid for the order exists-it shouldn't but just in case 
-            var orders = await _context.OrderInformation.FirstOrDefaultAsync(x=>x.TempCartsIdentity.ToString() == orderGuid);
+            var orders = await _context.OrderInformation.FirstOrDefaultAsync(x=>x.TempCartsIdentity.ToString() == orderInformation.GuidId);
            
             if (orders != null)
             {
@@ -89,12 +88,20 @@ namespace API.Controllers
               return BadRequest("The order has already been processed-paid");
             }
             
-            var cartGuid = await _context.TemporaryCartItems.FirstOrDefaultAsync(x=>x.Indentity.ToString() == orderGuid);
+            var cartGuid = await _context.TemporaryCartItems.FirstOrDefaultAsync(x=>x.Indentity.ToString() == orderInformation.GuidId);
+            _logger.LogInformation(orderInformation.GuidId);
+            if (cartGuid == null)
+            {
+                _logger.LogWarning("this value should not be null"); 
+            }
             
-            var  convertStringToGuid =  Guid.TryParse(orderGuid, out var newGuid);
+            
+            var  convertStringToGuid =  Guid.TryParse(orderInformation.GuidId, out var newGuid);
+         
             //we assume guid values will always be unique 
             if (cartGuid is not null)
-            {
+            { 
+             
                 OrderInformation order = new OrderInformation()
                 {
                     Credit = orderInformation.Credit,
@@ -114,7 +121,7 @@ namespace API.Controllers
             }
             else
             {
-                return BadRequest("There is associated guidId from the menu");
+                return BadRequest("There is no ssociated guidId from the menu");
             }
 
         }

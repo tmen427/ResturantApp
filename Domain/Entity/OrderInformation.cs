@@ -9,7 +9,6 @@
         public string? Expiration { get; set; }
         public string? CVV { get; set; }
         public string? UserName { get; set; }
-        
         public bool Paid { get; set; } = false;
         public Guid TempCartsIdentity { get; set; }
 
