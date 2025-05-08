@@ -19,10 +19,10 @@ using Resturant.Infrastructure.Repository;
 using Resturant.Domain.Entity;
 using System.Reflection;
 using System.Text.Json.Serialization;
+using API.Repository;
 using MediatR;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
-using Resturant.Application.Extension; 
-using Resturant.Application.Respository;
+using Resturant.Application.Extension;
 using Resturant.Infrastructure.Repository;
 
 
@@ -41,7 +41,9 @@ builder.Services.AddControllers()
     .AddJsonOptions(options =>
         options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 
-builder.Services.AddTransient<IRepo<User>, UsersRepo>();
+builder.Services.AddTransient<Resturant.Application.Respository.IRepo<User>, UsersRepo>();
+
+builder.Services.AddTransient<IRepository<TemporaryCartItems>, OrderRepo>();
 //builder.Services.AddTransient<ExceptionHandlingMIddleware>();
 
 //use in memory database instead of sql database right now 
