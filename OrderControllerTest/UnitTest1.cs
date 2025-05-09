@@ -32,20 +32,31 @@ public class UnitTest1
           .ReturnsAsync(temporaryCartItems);
 
       var controller = new OrderController(loggerMock.Object, mock.Object);
-      var callMethod = await controller.TempCartItems();
+      var results = await controller.TempCartItems();
+   //   var okResult = results.result as OkObjectResult;
 
-      Assert.NotNull(mock);
-      Assert.NotNull(callMethod);
+      Assert.IsType<List<TemporaryCartItems>>(results);
+     // Assert.Equal(200, okResult.StatusCode);
+     
       
     }
   
     [Fact]
     public void TestSecondMethod()
     {
-        var g = Guid.NewGuid().ToString();
-        TemporaryCartItems t = new TemporaryCartItems(); 
+        
         var mock = new Mock<IRepository<TemporaryCartItems>>();
-        var items = mock.Setup(m => m.ReturnCartItemsByGuidAsync(It.IsAny<Guid>())).ReturnsAsync(TemporaryCartItems);
+        var loggerMock = new Mock<ILogger<OrderController>>();
+           mock.Setup(x => x.ReturnCartItemsByGuidAsync(It.IsAny<string>()))
+            .ReturnsAsync(new TemporaryCartItems());
+        
+        var controller = new OrderController(loggerMock.Object, mock.Object);
+        var guid = Guid.NewGuid().ToString();
+        var results = controller.GetTempsItemsTableByGuid(guid);
+        var ok = results.Result as OkObjectResult;
+        
+
+        Assert.Equal(200, ok.StatusCode);
 
 
     }

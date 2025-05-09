@@ -52,14 +52,15 @@ namespace API.Controllers
 
 
         [HttpGet("TempItemsTable")]
-        public async Task<IActionResult> TempCartItems()
+        public async Task<List<TemporaryCartItems>> TempCartItems()
         {
             //  var tempCartItems = await _context.TemporaryCartItems.ToListAsync();
             // var tempCartItems = await _context.TemporaryCartItems.Include("MenuItems").ToListAsync();
 
             var tempCartItems = await _temporaryCartRepository.ReturnListItemsAsync();
 
-            return Ok(tempCartItems);
+        //    return Ok(tempCartItems);
+        return tempCartItems;
         }
 
         [HttpGet("GetTotalPrice")]
