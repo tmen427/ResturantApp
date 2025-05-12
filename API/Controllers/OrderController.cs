@@ -25,6 +25,10 @@ namespace API.Controllers
            private readonly ILogger<OrderController> _logger;
         //   private readonly ToDoContext _context; 
         private readonly IRepository<TemporaryCartItems> _temporaryCartRepository;
+        
+        
+        
+        
 
         public OrderController(ILogger<OrderController> logger,  IRepository<TemporaryCartItems> temporaryCartRepository)
         {
@@ -40,6 +44,16 @@ namespace API.Controllers
         }
 
 
+        [HttpGet("DivisonByZero")]
+        public int DivisionByZero(int numerator)
+        {
+            if (numerator == 0)
+            {
+                throw new DivideByZeroException("can't divide by zero");
+            }
+            return 10/numerator;
+        }
+        
 
         public class MenuDTO
         {
@@ -52,15 +66,15 @@ namespace API.Controllers
 
 
         [HttpGet("TempItemsTable")]
-        public async Task<List<TemporaryCartItems>> TempCartItems()
+        public async Task<IActionResult> TempCartItems()
         {
             //  var tempCartItems = await _context.TemporaryCartItems.ToListAsync();
             // var tempCartItems = await _context.TemporaryCartItems.Include("MenuItems").ToListAsync();
 
             var tempCartItems = await _temporaryCartRepository.ReturnListItemsAsync();
 
-        //    return Ok(tempCartItems);
-        return tempCartItems;
+            return Ok(tempCartItems);
+      //  return tempCartItems;
         }
 
         [HttpGet("GetTotalPrice")]

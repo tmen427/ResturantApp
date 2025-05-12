@@ -4,6 +4,7 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Identity.Client;
 using Moq;
 using Resturant.Domain.Entity;
 using Resturant.Infrastructure.Context;
@@ -33,16 +34,44 @@ public class UnitTest1
 
       var controller = new OrderController(loggerMock.Object, mock.Object);
       var results = await controller.TempCartItems();
-   //   var okResult = results.result as OkObjectResult;
+      var okResult = results as OkObjectResult;
 
-      Assert.IsType<List<TemporaryCartItems>>(results);
-     // Assert.Equal(200, okResult.StatusCode);
-     
+
+      Assert.IsAssignableFrom<IActionResult>(okResult);
+      Assert.Equal(200, okResult.StatusCode);
       
     }
+
+   [Fact]
+    public void UnitTestDivisionByZero()
+    {
+        var mock = new Mock<IRepository<TemporaryCartItems>>(); 
+        var loggerMock = new Mock<ILogger<OrderController>>();
+        var controller = new OrderController(loggerMock.Object, mock.Object); 
+        
+        //if you call te method right here it will fail because you can't divid by zero
+        //
+        Action callthemethod = () => controller.DivisionByZero(5);
+        var callthismehtod = controller.DivisionByZero(5);
+        
+      //  DivideByZeroException divide  = Assert.Throws<DivideByZeroException>(() => callthemethod());
+     //   Assert.Equal("can't divide by zero", divide.Message);
+        Assert.Equal(2, callthismehtod);
+       // Assert.Throws<DivideByZeroException>(() => callthemethod);
+   //     Assert.Throws<NullReferenceException>(() => controller.DivisionByZero(numerator));
+     //   Assert.Equal<int>(10, callthemethod);
+     //   Assert.Equal<int>(909090, callthemethod);
+        
+    }
+    
+    
+    
+    
   
-    [Fact]
-    public void TestSecondMethod()
+    [InlineData("whatever")]
+    [InlineData("can  put anthing here as logn as string")]
+    [Theory]
+    public async Task UnitTestGetTotalPrice(string guid)
     {
         
         var mock = new Mock<IRepository<TemporaryCartItems>>();
@@ -51,11 +80,12 @@ public class UnitTest1
             .ReturnsAsync(new TemporaryCartItems());
         
         var controller = new OrderController(loggerMock.Object, mock.Object);
-        var guid = Guid.NewGuid().ToString();
+    //    var guid = Guid.NewGuid().ToString();
         var results = controller.GetTempsItemsTableByGuid(guid);
-        var ok = results.Result as OkObjectResult;
-        
+        var ok = results.Result as ObjectResult;
+   
 
+        Assert.IsType<TemporaryCartItems>(ok.Value);
         Assert.Equal(200, ok.StatusCode);
 
 
