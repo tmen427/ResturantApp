@@ -1,3 +1,4 @@
+using API.DTO;
 using Microsoft.EntityFrameworkCore;
 using Resturant.Domain.Entity;
 using Resturant.Infrastructure.Context;
@@ -6,6 +7,8 @@ namespace API.Repository;
 
 public class OrderRepo : IRepository<TemporaryCartItems>
 {
+    
+    //the Order repo can also include other methods that are not included in IRepository 
     
     private  readonly ToDoContext _context; 
     
@@ -28,4 +31,10 @@ public class OrderRepo : IRepository<TemporaryCartItems>
             TemporaryCartItems.FirstOrDefaultAsync(x=>x.Indentity.ToString() == guid);
         return tempItemPrice;
     }
+
+    public Task<List<MenuDTO>> ReturnCartItemsAsync()
+    {
+        throw new NotImplementedException();
+    }
+    
 }
