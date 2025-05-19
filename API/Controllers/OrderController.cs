@@ -23,21 +23,20 @@ namespace API.Controllers
 
         //private readonly IMediator _mediator;
 
-          private readonly ILogger<OrderController> _logger;
+    
           private readonly ToDoContext _context; 
           private readonly IRepository<TemporaryCartItems> _temporaryCartRepository;
-        
-        
-        
-        public OrderController(ILogger<OrderController> logger, ToDoContext context,  IRepository<TemporaryCartItems> temporaryCartRepository)
+          
+        public OrderController(ToDoContext context,  IRepository<TemporaryCartItems> temporaryCartRepository)
         {
 
             //   _mediator = mediatR ?? throw  new ArgumentNullException(nameof(mediatR));
-             _logger = logger ?? throw new ArgumentNullException(nameof(logger));    
-             _context = context ?? throw new ArgumentNullException(nameof(context)); 
-                
-            _temporaryCartRepository = temporaryCartRepository ??
-                                       throw new ArgumentNullException(nameof(temporaryCartRepository));
+       
+          //   _context = context ?? throw new ArgumentNullException("haaahahah" + nameof(context));
+             _context = context; 
+            // _temporaryCartRepository = temporaryCartRepository ??
+            //                            throw new ArgumentNullException("Bro I already told u this can't be null" + nameof(temporaryCartRepository));
+            _temporaryCartRepository = temporaryCartRepository;
         }
 
 

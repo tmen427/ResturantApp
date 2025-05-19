@@ -42,7 +42,7 @@ builder.Services.AddControllers()
     .AddJsonOptions(options =>
         options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 
-builder.Services.AddTransient<Resturant.Application.Respository.IRepo<User>, UsersRepo>();
+//builder.Services.AddTransient<Resturant.Application.Respository.IRepo<User>, UsersRepo>();
 
 builder.Services.AddTransient<IRepository<TemporaryCartItems>, OrderRepo>();
 //builder.Services.AddTransient<ExceptionHandlingMIddleware>();

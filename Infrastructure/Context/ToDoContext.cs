@@ -15,12 +15,25 @@ namespace Resturant.Infrastructure.Context
 {
     public class ToDoContext : DbContext
     {
-        public ToDoContext(DbContextOptions<ToDoContext> options, IMediator mediator) : base(options)
+        // public ToDoContext(DbContextOptions<ToDoContext> options, IMediator mediator) : base(options)
+        // {
+        //     _mediator = mediator ?? throw new ArgumentNullException("nonononon" + nameof(mediator));
+        //  //   _mediator = mediator; 
+        // }
+        
+        public ToDoContext(DbContextOptions<ToDoContext> options) : base(options)
         {
-            _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
-         //   _mediator = mediator; 
+   
         }
 
+        
+        //this is needed for unit testing a parameterless constructer
+        public ToDoContext()
+        {
+            
+        }
+
+      //  private readonly IMediator _mediator;
         public DbSet<User> Users { get; set; }
         public DbSet<OrderInformation> OrderInformation { get; set; }
 
@@ -29,7 +42,7 @@ namespace Resturant.Infrastructure.Context
         
         public DbSet<Event> Events { get; set; } 
         
-       public DbSet<TemporaryCartItems> TemporaryCartItems { get; set; }
+        public DbSet<TemporaryCartItems> TemporaryCartItems { get; set; }
         public DbSet<MenuItemsVO> MenuItems { get; set; }
 
 
@@ -37,7 +50,7 @@ namespace Resturant.Infrastructure.Context
         public DbSet<BookingInformation> BookingInformation { get; set; }
         public DbSet<UserInformation> UserInformation { get; set; }
 
-        private readonly IMediator _mediator;
+
 
 
         // public override async Task<int> SaveChangesAsync(CancellationToken cancellation = default)

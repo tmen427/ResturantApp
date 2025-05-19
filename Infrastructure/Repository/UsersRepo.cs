@@ -7,7 +7,7 @@ using Resturant.Domain.Entity;
 
 namespace Resturant.Infrastructure.Repository
 {
-    public class UsersRepo : IRepo<User>
+    public class UsersRepo : IRepo1<User>
     {
         private readonly ToDoContext _context;
        

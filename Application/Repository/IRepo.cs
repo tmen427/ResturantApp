@@ -1,7 +1,7 @@
 ﻿
 namespace Resturant.Application.Respository
 {
-    public interface IRepo<T> where T : class 
+    public interface IRepo1<T> where T : class 
     {
 
 
