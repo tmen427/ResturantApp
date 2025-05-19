@@ -5,12 +5,12 @@ using Resturant.Infrastructure.Context;
 
 namespace API.Repository;
 
-public class OrderRepo : IRepository<TemporaryCartItems>
+public class OrderRepo : IRepository
 {
     
     //the Order repo can also include other methods that are not included in IRepository 
     
-    private  readonly ToDoContext _context; 
+    private readonly ToDoContext _context; 
     
     //asp.net automatically inititializes this object 
     public OrderRepo(ToDoContext context)
@@ -32,9 +32,14 @@ public class OrderRepo : IRepository<TemporaryCartItems>
         return tempItemPrice;
     }
 
-    public Task<List<MenuDTO>> ReturnCartItemsAsync()
+    public async Task<int> SaveCartItemsAsync()
     {
-        throw new NotImplementedException();
+        return await _context.SaveChangesAsync();
     }
-    
+
+    public async Task<MenuItemsVO> FindByPrimaryKey(int id)
+    {     
+        var menuItem =  await _context.MenuItems.FindAsync(id); 
+        return menuItem;
+    }
 }

@@ -44,7 +44,7 @@ builder.Services.AddControllers()
 
 //builder.Services.AddTransient<Resturant.Application.Respository.IRepo<User>, UsersRepo>();
 
-builder.Services.AddTransient<IRepository<TemporaryCartItems>, OrderRepo>();
+builder.Services.AddTransient<IRepository, OrderRepo>();
 //builder.Services.AddTransient<ExceptionHandlingMIddleware>();
 
 //use in memory database instead of sql database right now 

@@ -25,9 +25,9 @@ namespace API.Controllers
 
     
           private readonly ToDoContext _context; 
-          private readonly IRepository<TemporaryCartItems> _temporaryCartRepository;
+          private readonly IRepository _temporaryCartRepository;
           
-        public OrderController(ToDoContext context,  IRepository<TemporaryCartItems> temporaryCartRepository)
+        public OrderController(ToDoContext context,  IRepository temporaryCartRepository)
         {
 
             //   _mediator = mediatR ?? throw  new ArgumentNullException(nameof(mediatR));
@@ -155,18 +155,22 @@ namespace API.Controllers
          [HttpDelete("DeleteMenuItem")]
          public async Task<ActionResult<MenuItemsVO>> ReturnDelete(int id, Guid guidId)
          {
-            var menuItem =   await _context.MenuItems.FindAsync(id); 
+          //  var menuItem =  await _context.MenuItems.FindAsync(id);
+            var menuItem = await _temporaryCartRepository.FindByPrimaryKey(id); 
+            
             if (menuItem != null)
             {
                 _context.MenuItems.Remove(menuItem);
             }
+            
+            await _temporaryCartRepository.SaveCartItemsAsync();
+         //   await _context.SaveChangesAsync();
          
-            await _context.SaveChangesAsync();
-         
+         //can break this up into another method
             
             //update total price-AFTER the menu Item has been saved to get the most up to date price
-            var tempCartItem = await _context.TemporaryCartItems.FirstOrDefaultAsync(x => x.Indentity == guidId);
-            
+           // var tempCartItem = await _context.TemporaryCartItems.FirstOrDefaultAsync(x => x.Indentity == guidId);
+            var tempCartItem = await _temporaryCartRepository.ReturnCartItemsByGuidAsync(guidId.ToString());
             var totalPriceMenuItems = 
                 _context.TemporaryCartItems.Include("MenuItems").
                     Where(x => x.Indentity == guidId).

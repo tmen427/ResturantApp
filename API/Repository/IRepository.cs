@@ -1,8 +1,16 @@
+using Resturant.Domain.Entity;
+
 namespace API.Repository;
 
-public interface IRepository<T> where T : class
+public interface IRepository 
 {
-    Task<List<T>> ReturnListItemsAsync(); 
-    Task<T> ReturnCartItemsByGuidAsync(string guid);
+    Task<List<TemporaryCartItems>> ReturnListItemsAsync(); 
+    Task<TemporaryCartItems> ReturnCartItemsByGuidAsync(string guid);
     
+    Task<int> SaveCartItemsAsync();
+
+    Task<MenuItemsVO> FindByPrimaryKey(int id); 
+    
+
+
 }
