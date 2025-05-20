@@ -165,23 +165,43 @@ namespace API.Controllers
             
             await _temporaryCartRepository.SaveCartItemsAsync();
          //   await _context.SaveChangesAsync();
-         
-         //can break this up into another method
             
             //update total price-AFTER the menu Item has been saved to get the most up to date price
            // var tempCartItem = await _context.TemporaryCartItems.FirstOrDefaultAsync(x => x.Indentity == guidId);
-            var tempCartItem = await _temporaryCartRepository.ReturnCartItemsByGuidAsync(guidId.ToString());
-            var totalPriceMenuItems = 
-                _context.TemporaryCartItems.Include("MenuItems").
-                    Where(x => x.Indentity == guidId).
-                    SelectMany(x=>x.MenuItems).
-                    Sum(x => x.Price);
+            // var tempCartItem = await _temporaryCartRepository.ReturnCartItemsByGuidAsync(guidId.ToString());
+            //
+            // var totalPriceMenuItems = 
+            //     _context.TemporaryCartItems.Include("MenuItems").
+            //         Where(x => x.Indentity == guidId).
+            //         SelectMany(x=>x.MenuItems).
+            //         Sum(x => x.Price);
+            //
+            //  //update price 
+            // tempCartItem.TotalPrice = totalPriceMenuItems;
+            //
+            // await _context.SaveChangesAsync();
+            // return Ok(menuItem);
+            var results = await UpdateTotalPrice(guidId);
+            return results;
+            
+         }
+
+         private async Task<ActionResult<MenuItemsVO>> UpdateTotalPrice(Guid guidId)
+         {
+             // var tempCartItem = await _context.TemporaryCartItems.FirstOrDefaultAsync(x => x.Indentity == guidId);
+             var tempCartItem = await _temporaryCartRepository.ReturnCartItemsByGuidAsync(guidId.ToString());
+           
+             var totalPriceMenuItems = 
+                 _context.TemporaryCartItems.Include("MenuItems").
+                     Where(x => x.Indentity == guidId).
+                     SelectMany(x=>x.MenuItems).
+                     Sum(x => x.Price);
             
              //update price 
-            tempCartItem.TotalPrice = totalPriceMenuItems;
+             tempCartItem.TotalPrice = totalPriceMenuItems;
 
-            await _context.SaveChangesAsync();
-            return Ok(menuItem);
+             await _context.SaveChangesAsync();
+             return Ok();
          }
 
 

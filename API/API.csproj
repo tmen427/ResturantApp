@@ -29,4 +29,8 @@
     <ProjectReference Include="..\Infrastructure\Resturant.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="..\OrderControllerTest" />
+  </ItemGroup>
+  
 </Project>

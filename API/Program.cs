@@ -159,6 +159,8 @@ app.Run();
 
 
 
+//add this for integration testing 
+public partial class Program { }
 
 //var builder = WebApplication.CreateBuilder(args);
 

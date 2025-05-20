@@ -2,7 +2,7 @@ using System.Runtime.CompilerServices;
 using API.Controllers;
 using API.Repository;
 using FluentAssertions.Specialized;
-using MediatR;
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -81,7 +81,7 @@ public class UnitTest1
 
 
     [Fact]
-    public void DeleteMethod()
+    public void DeleteMethodshouldreturnMenutItems()
     {
         var mockSet = new Mock<DbSet<TemporaryCartItems>>();
         //  var mockOptions = new Mock<DbContextOptions<ToDoContext>>();
@@ -104,26 +104,25 @@ public class UnitTest1
         var mockRepo = new Mock<IRepository>();
         var menuItems= new MenuItemsVO() { Name = "cookies" };
         
-        List<TemporaryCartItems> temporaryCartItems = new List<TemporaryCartItems>()
-        {
-            new TemporaryCartItems() { Id = 1, Indentity = Guid.NewGuid(), Created = DateTime.Now, TotalPrice = 100 },
-            new TemporaryCartItems() { Id = 1, Indentity = Guid.NewGuid(), Created = DateTime.Now, TotalPrice = 100 },
-            new TemporaryCartItems() { Id = 1, Indentity = Guid.NewGuid(), Created = DateTime.Now, TotalPrice = 100 },
-        };
-        
-        //"test" all the methods that are within the controller method 
+        //"test" all the methods that are within the controller method-this is just for the user to have 
+        //it dosen't know "which" methods are called in the controller but you could setup all of them here-if you wsih 
+        //even though it's kind of useless
         mockRepo.Setup(m => m.FindByPrimaryKey(It.IsAny<int>())).ReturnsAsync(menuItems);
-        mockRepo.Setup(m => m.ReturnCartItemsByGuidAsync(It.IsAny<string>())).ReturnsAsync(new TemporaryCartItems());
-        
+        mockRepo.Setup(m => m.SaveCartItemsAsync()).ReturnsAsync(0);
+        mockRepo.Setup(m => m.ReturnCartItemsByGuidAsync(It.IsAny<string>())).Returns(Task.FromResult(new TemporaryCartItems()));
+        mockRepo.Setup(m=>m.ReturnListItemsAsync()).ReturnsAsync(ReturnListOfTemporaryCartItems());
  
         OrderController orderController = new OrderController(null, mockRepo.Object);
         var result = orderController.ReturnDelete(1, Guid.Empty);
 
-        
+      
+
         Assert.IsAssignableFrom<Task<ActionResult<MenuItemsVO>>>(result);
+      
         
 
     }
-    
- 
+
+
+  
 }
