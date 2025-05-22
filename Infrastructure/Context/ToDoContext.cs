@@ -30,7 +30,6 @@ namespace Resturant.Infrastructure.Context
         //this is needed for unit testing a parameterless constructer
         public ToDoContext()
         {
-            
         }
 
       //  private readonly IMediator _mediator;
@@ -86,6 +85,12 @@ namespace Resturant.Infrastructure.Context
         //     return 1; 
         // }
 
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+         //   optionsBuilder.EnableSensitiveDataLogging();
+            optionsBuilder.LogTo(Console.WriteLine);    
+        }
+        
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

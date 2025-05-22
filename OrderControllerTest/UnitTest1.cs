@@ -1,3 +1,4 @@
+using System.Net;
 using System.Runtime.CompilerServices;
 using API.Controllers;
 using API.Repository;
@@ -34,7 +35,7 @@ public class UnitTest1
     
 
     [Fact]
-    public async void TestOrderControllerTempCartItemsMethod()
+    public async void TempCartItemsTableReturnsOk()
     {
 
         List<TemporaryCartItems> temporaryCartItems = new System.Collections.Generic.List<TemporaryCartItems>()
@@ -47,7 +48,6 @@ public class UnitTest1
         var mockRepo = new Mock<IRepository>();
         mockRepo.Setup(m => m.ReturnListItemsAsync()).ReturnsAsync(temporaryCartItems);
         
-        
         var controller = new OrderController(null, mockRepo.Object);
         var results = await controller.TempCartItems();
         var okResult = results as OkObjectResult;
@@ -59,7 +59,7 @@ public class UnitTest1
 
 
     [Fact]
-    public async Task UnitTestGetTotalPrice()
+    public async Task GetTotalPriceReturnsTotalPrice()
     {
 
         var mock = new Mock<IRepository>();
@@ -84,7 +84,6 @@ public class UnitTest1
     public void DeleteMethodshouldreturnMenutItems()
     {
         var mockSet = new Mock<DbSet<TemporaryCartItems>>();
-        //  var mockOptions = new Mock<DbContextOptions<ToDoContext>>();
         var mockDbContext = new Mock<ToDoContext>();
 
         //  mockDbContext.Setup(m=>m.Remove(It.IsAny<TemporaryCartItems>())).Verifiable();
@@ -92,7 +91,7 @@ public class UnitTest1
 
         //mockDbContext.Setup(m=>m.Set<TemporaryCartItems>()).Returns(mockSet.Object);
         OrderController orderController = new OrderController(mockDbContext.Object, null);
-        var ok = orderController.ReturnDelete(1, Guid.Empty);
+        var ok = orderController.RemoveMenuItem(1, Guid.Empty);
 
         Assert.IsAssignableFrom<Task<ActionResult<MenuItemsVO>>>(ok);
 
@@ -102,25 +101,16 @@ public class UnitTest1
     public async Task RemoveTempCartItemsMethodAsyncTask()
     {
         var mockRepo = new Mock<IRepository>();
-        var menuItems= new MenuItemsVO() { Name = "cookies" };
+        var menuItems= new MenuItemsVO() { Name = "Egg Rolls" };
         
-        //"test" all the methods that are within the controller method-this is just for the user to have 
-        //it dosen't know "which" methods are called in the controller but you could setup all of them here-if you wsih 
-        //even though it's kind of useless
         mockRepo.Setup(m => m.FindByPrimaryKey(It.IsAny<int>())).ReturnsAsync(menuItems);
         mockRepo.Setup(m => m.SaveCartItemsAsync()).ReturnsAsync(0);
-        mockRepo.Setup(m => m.ReturnCartItemsByGuidAsync(It.IsAny<string>())).Returns(Task.FromResult(new TemporaryCartItems()));
-        mockRepo.Setup(m=>m.ReturnListItemsAsync()).ReturnsAsync(ReturnListOfTemporaryCartItems());
  
         OrderController orderController = new OrderController(null, mockRepo.Object);
-        var result = orderController.ReturnDelete(1, Guid.Empty);
-
-      
-
-        Assert.IsAssignableFrom<Task<ActionResult<MenuItemsVO>>>(result);
-      
+        var result = orderController.RemoveMenuItem(1, Guid.Empty);
         
-
+        Assert.IsAssignableFrom<Task<ActionResult<MenuItemsVO>>>(result);
+        
     }
 
 

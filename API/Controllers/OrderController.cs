@@ -22,8 +22,6 @@ namespace API.Controllers
     {
 
         //private readonly IMediator _mediator;
-
-    
           private readonly ToDoContext _context; 
           private readonly IRepository _temporaryCartRepository;
           
@@ -38,17 +36,7 @@ namespace API.Controllers
             //                            throw new ArgumentNullException("Bro I already told u this can't be null" + nameof(temporaryCartRepository));
             _temporaryCartRepository = temporaryCartRepository;
         }
-
-
-        [HttpGet("DivisonByZero")]
-        public int DivisionByZero(int numerator)
-        {
-            if (numerator == 0)
-            {
-                throw new DivideByZeroException("can't divide by zero");
-            }
-            return 10/numerator;
-        }
+        
         
         [HttpGet("TempItemsTable")]
         public async Task<IActionResult> TempCartItems()
@@ -80,6 +68,7 @@ namespace API.Controllers
               if(menuDto.Any()) {
                  return Ok(menuDto);
              }
+              
              return NotFound("no value was found");
          }
 
@@ -153,7 +142,7 @@ namespace API.Controllers
          }
          
          [HttpDelete("DeleteMenuItem")]
-         public async Task<ActionResult<MenuItemsVO>> ReturnDelete(int id, Guid guidId)
+         public async Task<ActionResult<MenuItemsVO>> RemoveMenuItem(int id, Guid guidId)
          {
           //  var menuItem =  await _context.MenuItems.FindAsync(id);
             var menuItem = await _temporaryCartRepository.FindByPrimaryKey(id); 

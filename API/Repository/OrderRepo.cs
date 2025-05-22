@@ -8,11 +8,8 @@ namespace API.Repository;
 public class OrderRepo : IRepository
 {
     
-    //the Order repo can also include other methods that are not included in IRepository 
-    
     private readonly ToDoContext _context; 
     
-    //asp.net automatically inititializes this object 
     public OrderRepo(ToDoContext context)
     {
         _context = context;
