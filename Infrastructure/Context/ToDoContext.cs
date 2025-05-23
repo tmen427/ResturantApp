@@ -25,7 +25,6 @@ namespace Resturant.Infrastructure.Context
         {
    
         }
-
         
         //this is needed for unit testing a parameterless constructer
         public ToDoContext()
@@ -35,16 +34,10 @@ namespace Resturant.Infrastructure.Context
       //  private readonly IMediator _mediator;
         public DbSet<User> Users { get; set; }
         public DbSet<OrderInformation> OrderInformation { get; set; }
-
         //   public DbSet<DomainEvent> DomainEvents { get; set; }    
-        
-        
         public DbSet<Event> Events { get; set; } 
-        
         public DbSet<TemporaryCartItems> TemporaryCartItems { get; set; }
         public DbSet<MenuItemsVO> MenuItems { get; set; }
-
-
         public DbSet<Contact> Contacts { get; set; }
         public DbSet<BookingInformation> BookingInformation { get; set; }
         public DbSet<UserInformation> UserInformation { get; set; }
@@ -99,9 +92,7 @@ namespace Resturant.Infrastructure.Context
                 .WithOne(e => e.User)
                 .HasForeignKey<UserInformation>(e => e.UserId)
                 .IsRequired();
-
-   
-            //
+            
           //  modelBuilder.Entity<TemporaryCartItems>().HasMany(x => x.MenuItems);
 
             modelBuilder.Entity<MenuItemsVO>().HasOne(p => p.TemporaryCartItems).WithMany(p => p.MenuItems)

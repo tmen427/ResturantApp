@@ -26,7 +26,7 @@ public class OrderRepo : IRepository
     {
         var tempItemPrice = await _context.
             TemporaryCartItems.FirstOrDefaultAsync(x=>x.Indentity.ToString() == guid);
-        return tempItemPrice;
+        return tempItemPrice!;
     }
 
     public async Task<int> SaveCartItemsAsync()
@@ -37,6 +37,6 @@ public class OrderRepo : IRepository
     public async Task<MenuItemsVO> FindByPrimaryKey(int id)
     {     
         var menuItem =  await _context.MenuItems.FindAsync(id); 
-        return menuItem;
+        return menuItem!;
     }
 }

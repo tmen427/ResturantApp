@@ -22,6 +22,8 @@ using System.Text.Json.Serialization;
 using API.DTO;
 using API.Repository;
 using MediatR;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Resturant.Application.Extension;
 using Resturant.Infrastructure.Repository;
@@ -50,7 +52,10 @@ builder.Services.AddTransient<IRepository, OrderRepo>();
 //use in memory database instead of sql database right now 
 //builder.Services.AddDbContext<ToDoContext>(options => options.UseSqlServer("name=WebApp2"));
 
-builder.Services.AddDbContext<ToDoContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddDbContext<ToDoContext>(options
+      => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+  //  => options.UseInMemoryDatabase("TestDB").ConfigureWarnings(builder => builder.Ignore(InMemoryEventId.TransactionIgnoredWarning))
+);
 
 
 //builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
