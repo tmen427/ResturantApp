@@ -29,7 +29,8 @@ using Resturant.Application.Extension;
 using Resturant.Infrastructure.Repository;
 
 
-var builder = WebApplication.CreateBuilder(args);
+//var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateSlimBuilder(args);
 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
@@ -38,7 +39,7 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -53,8 +54,8 @@ builder.Services.AddTransient<IRepository, OrderRepo>();
 //builder.Services.AddDbContext<ToDoContext>(options => options.UseSqlServer("name=WebApp2"));
 
 builder.Services.AddDbContext<ToDoContext>(options
-      => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
-  //  => options.UseInMemoryDatabase("TestDB").ConfigureWarnings(builder => builder.Ignore(InMemoryEventId.TransactionIgnoredWarning))
+  //    => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+    => options.UseInMemoryDatabase("TestDB").ConfigureWarnings(builder => builder.Ignore(InMemoryEventId.TransactionIgnoredWarning))
 );
 
 

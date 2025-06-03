@@ -20,46 +20,40 @@ namespace API.Controllers
     [ApiController]
     public class OrderController : Controller
     {
-
         //private readonly IMediator _mediator;
           private readonly ToDoContext _context; 
           private readonly IRepository _temporaryCartRepository;
           
         public OrderController(ToDoContext context,  IRepository temporaryCartRepository)
         {
-
             //   _mediator = mediatR ?? throw  new ArgumentNullException(nameof(mediatR));
-       
-          //   _context = context ?? throw new ArgumentNullException("haaahahah" + nameof(context));
-             _context = context; 
-            // _temporaryCartRepository = temporaryCartRepository ??
-            //                            throw new ArgumentNullException("Bro I already told u this can't be null" + nameof(temporaryCartRepository));
-            _temporaryCartRepository = temporaryCartRepository;
+             _context = context ?? throw new ArgumentNullException(nameof(context));
+             _temporaryCartRepository = temporaryCartRepository ?? throw new ArgumentNullException(nameof(temporaryCartRepository));
         }
-        
         
         [HttpGet("TempItemsTable")]
         public async Task<IActionResult> TempCartItems()
         {
             var tempCartItems = await _temporaryCartRepository.ReturnListItemsAsync();
-            return Ok(tempCartItems);
+            return tempCartItems.Count == 0 ? NotFound() : Ok(tempCartItems);
         }
 
         [HttpGet("GetTotalPrice")]
-        public async Task<IActionResult> GetTempsItemsTableByGuid(string guid)
+        public async Task<IActionResult> GetTempsItemsTableByGuid(string guid = "3fa85f64-5717-4562-b3fc-2c963f66afa")
         {
-            if (guid == null)
-            {
-                throw new ArgumentNullException(nameof(guid));
-            }
-            
             var tempItemPrice = await _temporaryCartRepository.ReturnCartItemsByGuidAsync(guid);
+            if (tempItemPrice == null)
+            {
+                return NotFound();
+            }
             return Ok(tempItemPrice);
         }
         
          [HttpGet("GetAllTempItems")]
-         public async Task<ActionResult<List<MenuDTO>>> TemporaryCartItems()
+         public async Task<ActionResult<IEnumerable<MenuDTO>>> TemporaryCartItems()
          {
+             
+             //refactor this into the repository???
              var menuDto = await _context.TemporaryCartItems.Include("MenuItems")
                  .Where(x => x.Indentity.ToString() != string.Empty)
                  .SelectMany(x => x.MenuItems)
@@ -74,7 +68,7 @@ namespace API.Controllers
 
 
          [HttpGet("GetMenuItemByGuid")]
-         public async Task<ActionResult<List<MenuDTO>>> TemporaryCartItemByGuid(
+         public async Task<ActionResult<IEnumerable<MenuDTO>>> TemporaryCartItemByGuid(
              [FromQuery] string guidId = "3fa85f64-5717-4562-b3fc-2c963f66afa6")
          {
         
@@ -141,6 +135,7 @@ namespace API.Controllers
              return guid;
          }
          
+         [ProducesResponseType(200)]
          [HttpDelete("DeleteMenuItem")]
          public async Task<ActionResult<MenuItemsVO>> RemoveMenuItem(int id, Guid guidId)
          {
@@ -268,7 +263,6 @@ namespace API.Controllers
 
          static decimal CheckItemPrices(string itemName)
          {
-             
              switch (itemName)
              {
                  case "Egg Roll Platter":
@@ -283,7 +277,7 @@ namespace API.Controllers
                      return ItemPrices.ChoppedBeef;
                  case "Veggie Platter":
                       return ItemPrices.VeggiePlatter;  
-                 default: throw new Exception("That is not a valid item name check " +  nameof(itemName));
+                 default: throw new Exception("That is not a valid menu item " +  nameof(itemName));
              }
          }
     

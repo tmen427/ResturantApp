@@ -9,10 +9,11 @@ public class OrderRepo : IRepository
 {
     
     private readonly ToDoContext _context; 
-    
-    public OrderRepo(ToDoContext context)
+    private readonly ILogger<OrderRepo> _logger;
+    public OrderRepo(ToDoContext context, ILogger<OrderRepo> logger)
     {
-        _context = context;
+        _context = context ?? throw new ArgumentNullException(nameof(context));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
     
     public async Task<List<TemporaryCartItems>> ReturnListItemsAsync()
@@ -20,13 +21,15 @@ public class OrderRepo : IRepository
         var tempCartItems = await _context.
             TemporaryCartItems.Include("MenuItems").ToListAsync();
         return tempCartItems;
+        
     }
 
-    public async Task<TemporaryCartItems> ReturnCartItemsByGuidAsync(string guid)
+    public async Task<TemporaryCartItems?> ReturnCartItemsByGuidAsync(string guid)
     {
         var tempItemPrice = await _context.
             TemporaryCartItems.FirstOrDefaultAsync(x=>x.Indentity.ToString() == guid);
-        return tempItemPrice!;
+        
+        return tempItemPrice ?? null; 
     }
 
     public async Task<int> SaveCartItemsAsync()

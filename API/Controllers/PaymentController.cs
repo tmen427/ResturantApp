@@ -25,7 +25,7 @@ namespace API.Controllers
         }
 
         [HttpGet("GetAllOrders")]
-        public async Task<ActionResult<List<OrderInformation>>> GetAllOrders()
+        public async Task<ActionResult<IEnumerable<OrderInformation>>> GetAllOrders()
         {
             //use a dto to get menu items also 
             var orders = await _context.OrderInformation.ToListAsync();

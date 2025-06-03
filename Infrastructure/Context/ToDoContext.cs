@@ -78,10 +78,12 @@ namespace Resturant.Infrastructure.Context
         //     return 1; 
         // }
 
+        
+        //change logging for entitiy framework 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
          //   optionsBuilder.EnableSensitiveDataLogging();
-            optionsBuilder.LogTo(Console.WriteLine);    
+          //  optionsBuilder.LogTo(Console.WriteLine);    
         }
         
 
