@@ -22,7 +22,7 @@ public class IntegrationTestforOrderController : IClassFixture<WebApplicationFac
     {
         var response  = await _client.GetAsync(url); 
         response.EnsureSuccessStatusCode();
-        Assert.Equal("application/json; charset=utf-8", response.Content.Headers.ContentType.ToString());
+        Assert.Equal("application/json; charset=utf-8", response.Content.Headers.ContentType?.ToString());
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
     

@@ -64,12 +64,11 @@ public class UnitTest1
 
         var mock = new Mock<IRepository>();
         var dbocontext = new Mock<ToDoContext>();
-
-
+        
         mock.Setup(x => x.ReturnCartItemsByGuidAsync(It.IsAny<string>()))
             .ReturnsAsync(new TemporaryCartItems());
 
-        var controller = new OrderController(null, mock.Object);
+        var controller = new OrderController(dbocontext.Object, mock.Object);
         var guid = Guid.NewGuid().ToString();
         var results = controller.GetTempsItemsTableByGuid(guid);
         var ok = results.Result as ObjectResult;

@@ -19,6 +19,7 @@ using Resturant.Infrastructure.Repository;
 using Resturant.Domain.Entity;
 using System.Reflection;
 using System.Text.Json.Serialization;
+using API;
 using API.DTO;
 using API.Repository;
 using MediatR;
@@ -47,15 +48,18 @@ builder.Services.AddControllers()
 
 //builder.Services.AddTransient<Resturant.Application.Respository.IRepo<User>, UsersRepo>();
 
-builder.Services.AddTransient<IRepository, OrderRepo>();
+//builder.Services.AddTransient<IRepository, OrderRepo>();
+
+builder.Services.AddMoreServices();
+
 //builder.Services.AddTransient<ExceptionHandlingMIddleware>();
 
 //use in memory database instead of sql database right now 
 //builder.Services.AddDbContext<ToDoContext>(options => options.UseSqlServer("name=WebApp2"));
 
 builder.Services.AddDbContext<ToDoContext>(options
-  //    => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
-    => options.UseInMemoryDatabase("TestDB").ConfigureWarnings(builder => builder.Ignore(InMemoryEventId.TransactionIgnoredWarning))
+      => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+  //  => options.UseInMemoryDatabase("TestDB").ConfigureWarnings(builder => builder.Ignore(InMemoryEventId.TransactionIgnoredWarning))
 );
 
 

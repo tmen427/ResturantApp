@@ -21,19 +21,22 @@ namespace API.Controllers
     public class OrderController : Controller
     {
         //private readonly IMediator _mediator;
-          private readonly ToDoContext _context; 
+
+        private readonly ToDoContext _context; 
           private readonly IRepository _temporaryCartRepository;
           
         public OrderController(ToDoContext context,  IRepository temporaryCartRepository)
         {
             //   _mediator = mediatR ?? throw  new ArgumentNullException(nameof(mediatR));
-             _context = context ?? throw new ArgumentNullException(nameof(context));
-             _temporaryCartRepository = temporaryCartRepository ?? throw new ArgumentNullException(nameof(temporaryCartRepository));
+            _context = context;
+           _temporaryCartRepository = temporaryCartRepository;
+
         }
         
         [HttpGet("TempItemsTable")]
         public async Task<IActionResult> TempCartItems()
         {
+
             var tempCartItems = await _temporaryCartRepository.ReturnListItemsAsync();
             return tempCartItems.Count == 0 ? NotFound() : Ok(tempCartItems);
         }
