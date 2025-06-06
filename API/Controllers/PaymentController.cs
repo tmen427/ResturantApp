@@ -16,7 +16,7 @@ namespace API.Controllers
     {
 
         private readonly ToDoContext _context;  
-        private readonly ILogger<PaymentController> _logger;
+        private readonly ILogger _logger;
 
         public PaymentController(ToDoContext context, ILogger<PaymentController> logger)
         {
@@ -128,7 +128,7 @@ namespace API.Controllers
         
   
    [HttpPost("BookingInformation")]
-    public async Task<string> BookingInformation(BookingInformation bookingInformation)
+    public async Task<ActionResult<string>> BookingInformation(BookingInformation bookingInformation)
     {
         await _context.BookingInformation.AddAsync(bookingInformation);
         await _context.SaveChangesAsync();
@@ -137,12 +137,12 @@ namespace API.Controllers
     
     
     [HttpPost("ContactInformation")]
-    public async Task<Contact> PostContactAsync(Contact contact)
+    public async Task<ActionResult<Contact>> PostContactAsync(Contact contact)
     {
             await _context.Contacts.AddAsync(contact);
             await _context.SaveChangesAsync();
-            return contact;
-            
+            return Ok(contact); 
+
     }
     }
 }

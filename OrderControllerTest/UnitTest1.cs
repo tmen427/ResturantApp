@@ -62,13 +62,13 @@ public class UnitTest1
     public async Task GetTotalPriceReturnsTotalPrice()
     {
 
-        var mock = new Mock<IRepository>();
-        var dbocontext = new Mock<ToDoContext>();
+        var mockRepo = new Mock<IRepository>();
+        var dbContext = new Mock<ToDoContext>();
         
-        mock.Setup(x => x.ReturnCartItemsByGuidAsync(It.IsAny<string>()))
+        mockRepo.Setup(x => x.ReturnCartItemsByGuidAsync(It.IsAny<string>()))
             .ReturnsAsync(new TemporaryCartItems());
 
-        var controller = new OrderController(dbocontext.Object, mock.Object);
+        var controller = new OrderController(dbContext.Object, mockRepo.Object);
         var guid = Guid.NewGuid().ToString();
         var results = controller.GetTempsItemsTableByGuid(guid);
         var ok = results.Result as ObjectResult;

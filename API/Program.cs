@@ -56,10 +56,10 @@ builder.Services.AddMoreServices();
 
 //use in memory database instead of sql database right now 
 //builder.Services.AddDbContext<ToDoContext>(options => options.UseSqlServer("name=WebApp2"));
-
+//
 builder.Services.AddDbContext<ToDoContext>(options
-      => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
-  //  => options.UseInMemoryDatabase("TestDB").ConfigureWarnings(builder => builder.Ignore(InMemoryEventId.TransactionIgnoredWarning))
+   //   => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+   => options.UseInMemoryDatabase("TestDB").ConfigureWarnings(builder => builder.Ignore(InMemoryEventId.TransactionIgnoredWarning))
 );
 
 

@@ -7,13 +7,13 @@ namespace API.Repository;
 
 public class OrderRepo : IRepository
 {
-    
+
     private readonly ToDoContext _context; 
-    private readonly ILogger<OrderRepo> _logger;
-    public OrderRepo(ToDoContext context, ILogger<OrderRepo> logger)
+
+    public OrderRepo(ToDoContext context)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    
     }
     
     public async Task<List<TemporaryCartItems>> ReturnListItemsAsync()
@@ -24,8 +24,6 @@ public class OrderRepo : IRepository
         
     }
     
-    
-
     public async Task<TemporaryCartItems?> ReturnCartItemsByGuidAsync(string guid)
     {
         var tempItemPrice = await _context.
