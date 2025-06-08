@@ -39,7 +39,18 @@ public class OrderRepo : IRepository
 
     public async Task<MenuItemsVO> FindByPrimaryKey(int id)
     {     
-        var menuItem =  await _context.MenuItems.FindAsync(id); 
-        return menuItem!;
+        MenuItemsVO? menuItem =  await _context.MenuItems.FindAsync(id); 
+        return menuItem;
     }
+    
+    public async Task<List<MenuDTO>> ReturnMenuDtoListAsync()
+    {
+        var menuDto = await _context.TemporaryCartItems.Include("MenuItems")
+            .Where(x => x.Indentity.ToString() != string.Empty)
+            .SelectMany(x => x.MenuItems)
+            .Select(x => new MenuDTO() { Id = x.Id, Name = x.Name, Price = x.Price, GuidId = x.TemporaryCartItemsIndentity.ToString() }).ToListAsync();
+        
+        return menuDto;
+    }
+    
 }

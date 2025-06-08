@@ -1,3 +1,4 @@
+using API.DTO;
 using Resturant.Domain.Entity;
 
 namespace API.Repository;
@@ -11,6 +12,8 @@ public interface IRepository
 
     Task<MenuItemsVO> FindByPrimaryKey(int id); 
     
+    
+    Task<List<MenuDTO>> ReturnMenuDtoListAsync();
 
 
 }

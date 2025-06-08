@@ -55,20 +55,14 @@ namespace API.Controllers
         }
         
          [HttpGet("GetAllTempItems")]
-         public async Task<ActionResult<IEnumerable<MenuDTO>>> TemporaryCartItems()
+
+          public async Task<ActionResult<IEnumerable<MenuDTO>>> TemporaryCartItems()
          {
-             
-             //refactor this into the repository???
-             var menuDto = await _context.TemporaryCartItems.Include("MenuItems")
-                 .Where(x => x.Indentity.ToString() != string.Empty)
-                 .SelectMany(x => x.MenuItems)
-                 .Select(x => new MenuDTO() { Id = x.Id, Name = x.Name, Price = x.Price, GuidId = x.TemporaryCartItemsIndentity.ToString() }).ToListAsync();
-             
-              if(menuDto.Any()) {
-                 return Ok(menuDto);
-             }
-              
-             return NotFound("no value was found");
+             var menuDTO = await _temporaryCartRepository.ReturnMenuDtoListAsync(); 
+              if(menuDTO.Any()) {
+                 return Ok(menuDTO);
+              }
+              return NotFound("no value was found");
          }
 
 
@@ -121,23 +115,23 @@ namespace API.Controllers
 
                  if (menuDto.Any())
                  {
-                     return Ok(menuDto.Count);
+                     int menusize = menuDto.Count;
+                     return Ok(menusize);
                  }
              }
              else
              {
-                 return Ok(0);
+                 return Ok(null);
              }
-             //even if nothing is found still return zero
-    
-             return Ok(0); 
+             
+             return Ok(null); 
          }
          
          [HttpGet("CreateGuide")]
-         public Guid MakeGuid()
+         public IActionResult MakeGuid()
          {
              var guid = Guid.NewGuid();
-             return guid;
+             return Ok(guid);
          }
          
          [ProducesResponseType(200)]
@@ -145,31 +139,14 @@ namespace API.Controllers
          public async Task<ActionResult<MenuItemsVO>> RemoveMenuItem(int id, Guid guidId)
          {
           //  var menuItem =  await _context.MenuItems.FindAsync(id);
-            var menuItem = await _temporaryCartRepository.FindByPrimaryKey(id); 
+            MenuItemsVO? menuItem = await _temporaryCartRepository.FindByPrimaryKey(id); 
             
             if (menuItem != null)
             {
                 _context.MenuItems.Remove(menuItem);
             }
-            
             await _temporaryCartRepository.SaveCartItemsAsync();
-         //   await _context.SaveChangesAsync();
-            
-            //update total price-AFTER the menu Item has been saved to get the most up to date price
-           // var tempCartItem = await _context.TemporaryCartItems.FirstOrDefaultAsync(x => x.Indentity == guidId);
-            // var tempCartItem = await _temporaryCartRepository.ReturnCartItemsByGuidAsync(guidId.ToString());
-            //
-            // var totalPriceMenuItems = 
-            //     _context.TemporaryCartItems.Include("MenuItems").
-            //         Where(x => x.Indentity == guidId).
-            //         SelectMany(x=>x.MenuItems).
-            //         Sum(x => x.Price);
-            //
-            //  //update price 
-            // tempCartItem.TotalPrice = totalPriceMenuItems;
-            //
-            // await _context.SaveChangesAsync();
-            // return Ok(menuItem);
+   
             var results = await UpdateTotalPrice(guidId);
             return results;
             
@@ -177,16 +154,14 @@ namespace API.Controllers
 
          private async Task<ActionResult<MenuItemsVO>> UpdateTotalPrice(Guid guidId)
          {
-             // var tempCartItem = await _context.TemporaryCartItems.FirstOrDefaultAsync(x => x.Indentity == guidId);
+
              var tempCartItem = await _temporaryCartRepository.ReturnCartItemsByGuidAsync(guidId.ToString());
-           
              var totalPriceMenuItems = 
                  _context.TemporaryCartItems.Include("MenuItems").
                      Where(x => x.Indentity == guidId).
                      SelectMany(x=>x.MenuItems).
                      Sum(x => x.Price);
-            
-             //update price 
+             
              tempCartItem.TotalPrice = totalPriceMenuItems;
 
              await _context.SaveChangesAsync();
@@ -223,7 +198,7 @@ namespace API.Controllers
              
               // return CreatedAtAction("TemporaryCartItemByGuid", new {dto.GuidId}, temporaryCartItems);
               return Ok(new { Name = name, Price = price });
-             // return Ok(temporaryCartItems);
+      
            }
     
            else if (checkNewMenuItem != null && paid is null)
@@ -282,7 +257,7 @@ namespace API.Controllers
                      return ItemPrices.ChoppedBeef;
                  case "Veggie Platter":
                       return ItemPrices.VeggiePlatter;  
-                 default: throw new Exception("That is not a valid menu item " +  nameof(itemName));
+                 default: throw new InvalidItemException("That is not a valid menu item- " +  itemName);
              }
          }
     
