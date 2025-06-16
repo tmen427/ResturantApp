@@ -9,11 +9,9 @@ public class OrderRepo : IRepository
 {
 
     private readonly ToDoContext _context; 
-
     public OrderRepo(ToDoContext context)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
-    
     }
     
     public async Task<List<TemporaryCartItems>> ReturnListItemsAsync()
@@ -21,7 +19,6 @@ public class OrderRepo : IRepository
         var tempCartItems = await  _context.
             TemporaryCartItems.Include("MenuItems").ToListAsync();
         return tempCartItems;
-        
     }
     
     public async Task<TemporaryCartItems?> ReturnCartItemsByGuidAsync(string guid)
@@ -51,5 +48,25 @@ public class OrderRepo : IRepository
         
         return menuDto;
     }
+
+    public async Task<List<MenuDTO>> ReturnListMenuDtoListByGuid(string guidId)
+    {
+        var menuDto = await _context.TemporaryCartItems.Include("MenuItems")
+            .Where(x => x.Indentity.ToString() == guidId)
+            .SelectMany(x => x.MenuItems)
+            .Select(x => new MenuDTO()
+                { Id = x.Id, Name = x.Name, Price = x.Price, GuidId = x.TemporaryCartItemsIndentity.ToString() })
+            .ToListAsync();
+        return menuDto;
+    }
+    
+    public decimal TotalMenuPrice(Guid menuGuid)
+    {
+       return _context.TemporaryCartItems.Include("MenuItems").
+            Where(x => x.Indentity == menuGuid).
+            SelectMany(x=>x.MenuItems).
+            Sum(x => x.Price);
+    }
+    
     
 }

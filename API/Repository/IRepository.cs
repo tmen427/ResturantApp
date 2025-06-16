@@ -12,8 +12,12 @@ public interface IRepository
 
     Task<MenuItemsVO> FindByPrimaryKey(int id); 
     
-    
     Task<List<MenuDTO>> ReturnMenuDtoListAsync();
+    
+    //therew no rule that says you have to return one type in a ipresotiry pattern
+    Task<List<MenuDTO>> ReturnListMenuDtoListByGuid(string guidId);
+
+    decimal TotalMenuPrice(Guid menuGuid); 
 
 
 }
