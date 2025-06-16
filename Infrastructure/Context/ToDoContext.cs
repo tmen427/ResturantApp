@@ -32,7 +32,7 @@ namespace Resturant.Infrastructure.Context
         }
 
       //  private readonly IMediator _mediator;
-        public DbSet<User> Users { get; set; }
+
         public DbSet<OrderInformation> OrderInformation { get; set; }
         //   public DbSet<DomainEvent> DomainEvents { get; set; }    
         public DbSet<Event> Events { get; set; } 
@@ -89,11 +89,7 @@ namespace Resturant.Infrastructure.Context
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<User>()
-                .HasOne(e => e.UserInformation)
-                .WithOne(e => e.User)
-                .HasForeignKey<UserInformation>(e => e.UserId)
-                .IsRequired();
+         
             
           //  modelBuilder.Entity<TemporaryCartItems>().HasMany(x => x.MenuItems);
 

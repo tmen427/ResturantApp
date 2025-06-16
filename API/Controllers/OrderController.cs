@@ -22,23 +22,21 @@ namespace API.Controllers
     public class OrderController : Controller
     {
         //private readonly IMediator _mediator;
-
         private readonly  ToDoContext _context;
-
-        private readonly IRepository _temporaryCartRepository; 
-          
+        private readonly IRepository _temporaryCartRepository;
+        
         public OrderController(ToDoContext context,  IRepository temporaryCartRepository)
         {
             //   _mediator = mediatR ?? throw  new ArgumentNullException(nameof(mediatR));
             _context = context; 
            _temporaryCartRepository = temporaryCartRepository;
+       
         
         }
-        
+
         [HttpGet("TempItemsTable")]
         public async Task<IActionResult> TempCartItems()
         {
-
             var tempCartItems = await _temporaryCartRepository.ReturnListItemsAsync();
             return tempCartItems.Count == 0 ? NotFound() : Ok(tempCartItems);
         }
@@ -71,12 +69,12 @@ namespace API.Controllers
              [FromQuery] string guidId = "3fa85f64-5717-4562-b3fc-2c963f66afa6")
          {
         
-             var guidCheck= Guid.TryParse(guidId, out var guidValue);
+             var guidCheck= Guid.TryParse(guidId, out  _);
      
              if (guidCheck)
              {
                  var menuDto = await _context.TemporaryCartItems.Include("MenuItems")
-                     .Where(x => x.Indentity.ToString() == guidValue.ToString())
+                     .Where(x => x.Indentity.ToString() == guidId)
                      .SelectMany(x => x.MenuItems)
                      .Select(x => new MenuDTO()
                          { Id = x.Id, Name = x.Name, Price = x.Price, GuidId = x.TemporaryCartItemsIndentity.ToString() })
@@ -91,9 +89,8 @@ namespace API.Controllers
              {
                  return Ok(0);
              }
-             //even if nothing is found still return zero
-             int zero = 0; 
-             return Ok(zero); 
+             
+             return Ok(0); 
          }
          
          
@@ -101,13 +98,13 @@ namespace API.Controllers
          public async Task<ActionResult<int>> TemporaryCartItemByGuidSize(
              [FromQuery] string guidId = "3fa85f64-5717-4562-b3fc-2c963f66afa6")
          {
-        
-             var guidCheck  = Guid.TryParse(guidId, out var guidValue);
+
+             var guidCheck = Guid.TryParse(guidId, out _); 
      
              if (guidCheck)
              {
                  var menuDto = await _context.TemporaryCartItems.Include("MenuItems")
-                     .Where(x => x.Indentity.ToString() == guidValue.ToString())
+                     .Where(x => x.Indentity.ToString() == guidId)
                      .SelectMany(x => x.MenuItems)
                      .Select(x => new MenuDTO()
                          { Id = x.Id, Name = x.Name, Price = x.Price, GuidId = x.TemporaryCartItemsIndentity.ToString() })
@@ -115,16 +112,16 @@ namespace API.Controllers
 
                  if (menuDto.Any())
                  {
-                     int menusize = menuDto.Count;
-                     return Ok(menusize);
+                     int menuSize = menuDto.Count;
+                     return Ok(menuSize);
                  }
              }
              else
              {
-                 return Ok(null);
+                  //ok(null) - returns no content 
+                 return Ok(0);
              }
-             
-             return Ok(null); 
+             return Ok(0); 
          }
          
          [HttpGet("CreateGuide")]

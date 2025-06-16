@@ -15,10 +15,10 @@
         public string? Email { get; set; }
 
         //required forgein key property 
-        public int? UserId { get; set; }
-
-        //the navigation property to the entity
-        public User? User { get; set; }
+        // public int? UserId { get; set; }
+        //
+        // //the navigation property to the entity
+        // public User? User { get; set; }
 
     }
 }

@@ -6,7 +6,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Resturant.Domain.Entity;
 
-using Resturant.Application.Respository;
 using System.ComponentModel;
 using Microsoft.Extensions.Hosting;
 

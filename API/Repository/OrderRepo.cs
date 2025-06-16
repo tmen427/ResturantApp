@@ -28,7 +28,6 @@ public class OrderRepo : IRepository
     {
         var tempItemPrice = await _context.
             TemporaryCartItems.FirstOrDefaultAsync(x=>x.Indentity.ToString() == guid);
-        
         return tempItemPrice ?? null; 
     }
 

@@ -15,7 +15,7 @@ using System.Text;
 //using Restuarant.Infrastucture.Repository; 
 using Newtonsoft.Json;
 using Resturant.Infrastructure.Context;
-using Resturant.Infrastructure.Repository;
+
 using Resturant.Domain.Entity;
 using System.Reflection;
 using System.Text.Json.Serialization;
@@ -27,7 +27,7 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Resturant.Application.Extension;
-using Resturant.Infrastructure.Repository;
+
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -94,7 +94,7 @@ builder.Services.AddSwaggerGen(opt =>
 });
 
 
-
+//builder.Services.AddHostedService<ImplementBackgroundSerivce>(); 
 
 builder.Services.AddCors(options =>
 {
