@@ -30,8 +30,15 @@ public class MiscController : Controller
     {
         await _context.CustomerInquiryInformation.AddAsync(contact);
         await _context.SaveChangesAsync();
-        return Ok(contact); 
-
+        return Ok(contact);
+    }
+    
+    
+    [HttpGet("CreateGuide")]
+    public IActionResult MakeGuid()
+    {
+        var guid = Guid.NewGuid();
+        return Ok(guid);
     }
 
     

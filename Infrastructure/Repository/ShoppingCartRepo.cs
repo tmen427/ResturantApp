@@ -29,12 +29,7 @@ public class ShoppingCartRepo : IRepository
             ShoppingCartItems.FirstOrDefaultAsync(x=>x.Identity.ToString() == guid);
         return tempItemPrice ?? null; 
     }
-
-    public async Task<int> SaveCartItemsAsync()
-    {
-        return await _context.SaveChangesAsync();
-    }
-
+    
     public async Task<MenuItems?> FindByPrimaryKey(int id)
     {     
         var menuItem =  await _context.MenuItems.FindAsync(id); 
@@ -64,10 +59,16 @@ public class ShoppingCartRepo : IRepository
     
     public decimal TotalMenuPrice(Guid menuGuid)
     {
+        
        return _context.ShoppingCartItems.Include("MenuItems").
             Where(x => x.Identity == menuGuid).
             SelectMany(x=>x.MenuItems).
             Sum(x => x.Price);
+    }
+    
+    public async Task<int> SaveCartItemsAsync()
+    {
+        return await _context.SaveChangesAsync();
     }
     
 }

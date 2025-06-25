@@ -25,30 +25,38 @@ namespace API.Controllers
         //private readonly IMediator _mediator;
         private readonly  RestaurantContext _context;
         private readonly IRepository _shoppingCartRepository;
+        private readonly ILogger<OrderController> _logger;
 
         
-        public OrderController(RestaurantContext context,  IRepository shoppingCartRepository)
+        public OrderController(RestaurantContext context,  IRepository shoppingCartRepository , ILogger<OrderController> logger)
         {
             //   _mediator = mediatR ?? throw  new ArgumentNullException(nameof(mediatR));
             _context = context; 
            _shoppingCartRepository = shoppingCartRepository;
-           
+           _logger = logger;
         }
         
 
         [HttpGet("TempItemsTable")] 
         public async Task<IActionResult> TempCartItems()
         {
-                 var shoppingCartItems = await _shoppingCartRepository.ReturnListItemsAsync(); 
-                 return shoppingCartItems.Count == 0 ? NotFound() : Ok(shoppingCartItems);
+            var shoppingCartItems = await _shoppingCartRepository.ReturnListItemsAsync(); 
+            return shoppingCartItems.Count == 0 ? NotFound() : Ok(shoppingCartItems);
         }
 
+        
         [HttpGet("GetTotalPrice")]
-        public async Task<IActionResult> GetTempsItemsTableByGuid(string guid = "3fa85f64-5717-4562-b3fc-2c963f66afa")
+        public async Task<IActionResult> GetTempsItemsTableByGuid(string guid = "3fa85f64-5717-4562-b3fc-2c963f66afa6")
         {
-            var totalPriceShoppingCartItems = await _shoppingCartRepository.ReturnCartItemsByGuidAsync(guid);
-             return totalPriceShoppingCartItems != null ?  Ok(totalPriceShoppingCartItems) : NotFound();
+            
+            _logger.LogInformation($"Get temps items table by guid: {guid}");
+           var shoppingCartItems = await _shoppingCartRepository.ReturnCartItemsByGuidAsync(guid);
+            
+        //    Guid.TryParse(guid, out Guid shoppingCartGuid);            
+        //    var totalPriceShoppingCartItems = _shoppingCartRepository.TotalMenuPrice(shoppingCartGuid); 
+             return shoppingCartItems != null ?  Ok(shoppingCartItems) : NotFound();
         }
+        
         
          [HttpGet("GetAllTempItems")]
          public async Task<ActionResult<IEnumerable<MenuDTO>>> TemporaryCartItems()
@@ -87,15 +95,7 @@ namespace API.Controllers
              return menuDto.Any() ? Ok(menuDto.Count) : NotFound();
          }
          
-         
-         //VIOLATES SRP???-but where owld i poiut this?
-         [HttpGet("CreateGuide")]
-         public IActionResult MakeGuid()
-         {
-             var guid = Guid.NewGuid();
-             return Ok(guid);
-         }
-         
+
          
          [ProducesResponseType(200)]
          [HttpDelete("DeleteMenuItem")]
