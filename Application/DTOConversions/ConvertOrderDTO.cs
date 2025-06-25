@@ -6,13 +6,13 @@ using Resturant.Application.DTO;
 
 namespace Restuarant.Application.DTOConversions
 {
-    public static class OrderDTO
+    public static class CustomerDTO
     {
 
       
-        public static OrderInformation ConvertFromOrderDTO(OrderInformationDTO dto)
+        public static CustomerInformation ConvertFromOrderDTO(CustomerDto dto)
         {
-            return new OrderInformation()
+            return new CustomerInformation()
             {
                 Credit = dto.Credit,
                 NameonCard = dto.NameonCard,

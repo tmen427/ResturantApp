@@ -63,7 +63,7 @@ public class UnitTest1
     {
 
         var mockRepo = new Mock<IRepository>();
-        var dbContext = new Mock<ToDoContext>();
+        var dbContext = new Mock<RestaurantContext>();
         
         mockRepo.Setup(x => x.ReturnCartItemsByGuidAsync(It.IsAny<string>()))
             .ReturnsAsync(new TemporaryCartItems());
@@ -83,7 +83,7 @@ public class UnitTest1
     public void DeleteMethodshouldreturnMenutItems()
     {
         var mockSet = new Mock<DbSet<TemporaryCartItems>>();
-        var mockDbContext = new Mock<ToDoContext>();
+        var mockDbContext = new Mock<RestaurantContext>();
 
         //  mockDbContext.Setup(m=>m.Remove(It.IsAny<TemporaryCartItems>())).Verifiable();
           mockDbContext.Setup(m => m.SaveChanges()).Returns(1);
@@ -92,7 +92,7 @@ public class UnitTest1
         OrderController orderController = new OrderController(mockDbContext.Object, null);
         var ok = orderController.RemoveMenuItem(1, Guid.Empty);
 
-        Assert.IsAssignableFrom<Task<ActionResult<MenuItemsVO>>>(ok);
+        Assert.IsAssignableFrom<Task<ActionResult<MenuItems>>>(ok);
 
     }
 
@@ -100,7 +100,7 @@ public class UnitTest1
     public async Task RemoveTempCartItemsMethodAsyncTask()
     {
         var mockRepo = new Mock<IRepository>();
-        var menuItems= new MenuItemsVO() { Name = "Egg Rolls" };
+        var menuItems= new MenuItems() { Name = "Egg Rolls" };
         
         mockRepo.Setup(m => m.FindByPrimaryKey(It.IsAny<int>())).ReturnsAsync(menuItems);
         mockRepo.Setup(m => m.SaveCartItemsAsync()).ReturnsAsync(0);
@@ -108,7 +108,7 @@ public class UnitTest1
         OrderController orderController = new OrderController(null, mockRepo.Object);
         var result = orderController.RemoveMenuItem(1, Guid.Empty);
         
-        Assert.IsAssignableFrom<Task<ActionResult<MenuItemsVO>>>(result);
+        Assert.IsAssignableFrom<Task<ActionResult<MenuItems>>>(result);
         
     }
 

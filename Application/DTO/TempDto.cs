@@ -1,4 +1,4 @@
-namespace API.DTO;
+namespace Resturant.Application.DTO;
 
 public class TempDto
 {

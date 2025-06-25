@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Resturant.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class thirdd : Migration
+    public partial class second1 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -48,21 +48,7 @@ namespace Resturant.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Events",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    StreamId = table.Column<Guid>(type: "uuid", nullable: false),
-                    Type = table.Column<int>(type: "integer", nullable: false),
-                    Price = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Events", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "OrderInformation",
+                name: "CustomerInformation",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
@@ -78,38 +64,37 @@ namespace Resturant.Infrastructure.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_OrderInformation", x => x.Id);
+                    table.PrimaryKey("PK_CustomerInformation", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "TemporaryCartItems",
+                name: "Events",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    StreamId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Type = table.Column<int>(type: "integer", nullable: false),
+                    Price = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Events", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ShoppingCartItems",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Indentity = table.Column<Guid>(type: "uuid", nullable: false),
+                    Identity = table.Column<Guid>(type: "uuid", nullable: false),
                     Created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    TotalPrice = table.Column<double>(type: "double precision", nullable: false)
+                    TotalPrice = table.Column<decimal>(type: "numeric", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_TemporaryCartItems", x => x.Id);
-                    table.UniqueConstraint("AK_TemporaryCartItems_Indentity", x => x.Indentity);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Users",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Email = table.Column<string>(type: "text", nullable: false),
-                    PasswordHash = table.Column<byte[]>(type: "bytea", nullable: true),
-                    PasswordSalt = table.Column<byte[]>(type: "bytea", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Users", x => x.Id);
+                    table.PrimaryKey("PK_ShoppingCartItems", x => x.Id);
+                    table.UniqueConstraint("AK_ShoppingCartItems_Identity", x => x.Identity);
                 });
 
             migrationBuilder.CreateTable(
@@ -118,56 +103,25 @@ namespace Resturant.Infrastructure.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(type: "text", nullable: true),
-                    Price = table.Column<double>(type: "double precision", nullable: false),
-                    TemporaryCartItemsIndentity = table.Column<Guid>(type: "uuid", nullable: false)
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Price = table.Column<decimal>(type: "numeric", nullable: false),
+                    ShoppingCartItemsIdentity = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_MenuItems", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_MenuItems_TemporaryCartItems_TemporaryCartItemsIndentity",
-                        column: x => x.TemporaryCartItemsIndentity,
-                        principalTable: "TemporaryCartItems",
-                        principalColumn: "Indentity",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "UserInformation",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Credit = table.Column<string>(type: "text", nullable: true),
-                    NameonCard = table.Column<string>(type: "text", nullable: true),
-                    CreditCardNumber = table.Column<string>(type: "text", nullable: true),
-                    Expiration = table.Column<string>(type: "text", nullable: true),
-                    CVV = table.Column<string>(type: "text", nullable: true),
-                    Email = table.Column<string>(type: "text", nullable: true),
-                    UserId = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_UserInformation", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_UserInformation_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
+                        name: "FK_MenuItems_ShoppingCartItems_ShoppingCartItemsIdentity",
+                        column: x => x.ShoppingCartItemsIdentity,
+                        principalTable: "ShoppingCartItems",
+                        principalColumn: "Identity",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_MenuItems_TemporaryCartItemsIndentity",
+                name: "IX_MenuItems_ShoppingCartItemsIdentity",
                 table: "MenuItems",
-                column: "TemporaryCartItemsIndentity");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_UserInformation_UserId",
-                table: "UserInformation",
-                column: "UserId",
-                unique: true);
+                column: "ShoppingCartItemsIdentity");
         }
 
         /// <inheritdoc />
@@ -180,22 +134,16 @@ namespace Resturant.Infrastructure.Migrations
                 name: "Contacts");
 
             migrationBuilder.DropTable(
+                name: "CustomerInformation");
+
+            migrationBuilder.DropTable(
                 name: "Events");
 
             migrationBuilder.DropTable(
                 name: "MenuItems");
 
             migrationBuilder.DropTable(
-                name: "OrderInformation");
-
-            migrationBuilder.DropTable(
-                name: "UserInformation");
-
-            migrationBuilder.DropTable(
-                name: "TemporaryCartItems");
-
-            migrationBuilder.DropTable(
-                name: "Users");
+                name: "ShoppingCartItems");
         }
     }
 }

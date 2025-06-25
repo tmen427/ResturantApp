@@ -19,15 +19,13 @@ using Resturant.Infrastructure.Context;
 using Resturant.Domain.Entity;
 using System.Reflection;
 using System.Text.Json.Serialization;
-using API;
-using API.DTO;
-using API.Repository;
+
 using MediatR;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Resturant.Application.Extension;
-
+using Resturant.Infrastructure;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -50,15 +48,17 @@ builder.Services.AddControllers()
 
 //builder.Services.AddTransient<IRepository, OrderRepo>();
 
-builder.Services.AddMoreServices();
+builder.Services.AddRepositoryService();
 
 //builder.Services.AddTransient<ExceptionHandlingMIddleware>();
 
 //use in memory database instead of sql database right now 
 //builder.Services.AddDbContext<ToDoContext>(options => options.UseSqlServer("name=WebApp2"));
 //
-builder.Services.AddDbContext<ToDoContext>(options
-      => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+builder.Services.AddDbContext<RestaurantContext>(options
+      => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"), 
+          optionsBuilder => optionsBuilder.MigrationsAssembly("Resturant.Infrastructure"))
+      
  //  => options.UseInMemoryDatabase("TestDB").ConfigureWarnings(warning => warning.Ignore(InMemoryEventId.TransactionIgnoredWarning))
 );
 
@@ -94,7 +94,7 @@ builder.Services.AddSwaggerGen(opt =>
 });
 
 
-//builder.Services.AddHostedService<ImplementBackgroundSerivce>(); 
+
 
 builder.Services.AddCors(options =>
 {
@@ -123,8 +123,6 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddHttpContextAccessor();
 
-//the background service , registered as a singleton 
-//builder.Services.AddHostedService<DatabaseBackGround>();
 
 
 //builder.Services.AddControllers().AddNewtonsoftJson(options =>

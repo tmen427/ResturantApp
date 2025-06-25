@@ -2,7 +2,7 @@
 
 namespace Resturant.Application.DTO
 {
-    public class OrderInformationDTO
+    public class CustomerDto
     {
         public string? Credit { get; set; }
         public string? NameonCard { get; set; }

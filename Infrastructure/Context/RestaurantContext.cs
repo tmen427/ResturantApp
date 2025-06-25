@@ -13,7 +13,7 @@ using Resturant.Domain.EventSourcing;
 
 namespace Resturant.Infrastructure.Context
 {
-    public class ToDoContext : DbContext
+    public class RestaurantContext : DbContext
     {
         // public ToDoContext(DbContextOptions<ToDoContext> options, IMediator mediator) : base(options)
         // {
@@ -21,30 +21,27 @@ namespace Resturant.Infrastructure.Context
         //  //   _mediator = mediator; 
         // }
         
-        public ToDoContext(DbContextOptions<ToDoContext> options) : base(options)
+        public RestaurantContext(DbContextOptions<RestaurantContext> options) : base(options)
         {
    
         }
         
         //this is needed for unit testing a parameterless constructer
-        public ToDoContext()
+        public RestaurantContext()
         {
         }
 
       //  private readonly IMediator _mediator;
 
-        public DbSet<OrderInformation> OrderInformation { get; set; }
+        public DbSet<CustomerInformation> CustomerInformation { get; set; }
         //   public DbSet<DomainEvent> DomainEvents { get; set; }    
         public DbSet<Event> Events { get; set; } 
-        public DbSet<TemporaryCartItems> TemporaryCartItems { get; set; }
-        public DbSet<MenuItemsVO> MenuItems { get; set; }
-        public DbSet<Contact> Contacts { get; set; }
+        public DbSet<ShoppingCartItems> ShoppingCartItems { get; set; }
+        public DbSet<MenuItems> MenuItems { get; set; }
+        public DbSet<CustomerInquiryInformation> CustomerInquiryInformation { get; set; }
         public DbSet<BookingInformation> BookingInformation { get; set; }
-        public DbSet<UserInformation> UserInformation { get; set; }
-
-
-
-
+        
+        
         // public override async Task<int> SaveChangesAsync(CancellationToken cancellation = default)
         // {
         //     // track changes in List<INotification> DomainEvents 
@@ -93,8 +90,8 @@ namespace Resturant.Infrastructure.Context
             
           //  modelBuilder.Entity<TemporaryCartItems>().HasMany(x => x.MenuItems);
 
-            modelBuilder.Entity<MenuItemsVO>().HasOne(p => p.TemporaryCartItems).WithMany(p => p.MenuItems)
-                .HasForeignKey(p => p.TemporaryCartItemsIndentity).HasPrincipalKey(x=>x.Indentity);
+            modelBuilder.Entity<MenuItems>().HasOne(p => p.ShoppingCartItems).WithMany(p => p.MenuItems)
+                .HasForeignKey(p => p.ShoppingCartItemsIdentity).HasPrincipalKey(x=>x.Identity);
           
              
       

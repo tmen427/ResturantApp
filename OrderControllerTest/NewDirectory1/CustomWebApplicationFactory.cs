@@ -13,7 +13,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
     {
         builder.ConfigureTestServices(services =>
         {
-            services.RemoveAll(typeof(DbContextOptions<ToDoContext>));
+            services.RemoveAll(typeof(DbContextOptions<RestaurantContext>));
             //add connection servcies here
         }); 
     }
