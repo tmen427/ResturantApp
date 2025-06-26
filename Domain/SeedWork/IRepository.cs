@@ -16,6 +16,8 @@ namespace Resturant.Domain.SeedWork
         
         Task<List<MenuItems>> ReturnMenuItemListByGuid(string guidId);
 
+        Task AddShoppingCartItem(ShoppingCartItems shoppingCartItem);
+
         decimal TotalMenuPrice(Guid menuGuid);
 
 

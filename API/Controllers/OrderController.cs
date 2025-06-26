@@ -151,9 +151,8 @@ namespace API.Controllers
                    menuItems.Price = menuItems.CheckMenuItemPrices(name);
                    shoppingcartitems.MenuItems.Add(menuItems);
               
-                
-               await _context.AddAsync(shoppingcartitems);
-   
+                   
+               await _shoppingCartRepository.AddShoppingCartItem(shoppingcartitems);
                await _shoppingCartRepository.SaveCartItemsAsync();
               // return CreatedAtAction("TemporaryCartItemByGuid", new {dto.GuidId}, temporaryCartItems);
               return Ok(new { Name = name, Price = initialprice });

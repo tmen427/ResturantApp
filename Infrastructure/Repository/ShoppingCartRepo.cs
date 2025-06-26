@@ -58,6 +58,12 @@ public class ShoppingCartRepo : IRepository
         //    .ToListAsync();
   
     }
+
+    public async Task AddShoppingCartItem(ShoppingCartItems shoppingCartItem)
+    {
+        await _context.AddAsync(shoppingCartItem);
+    }
+    
     
     public decimal TotalMenuPrice(Guid menuGuid)
     {

@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Resturant.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class fourth6 : Migration
+    public partial class fourth9 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -90,7 +90,7 @@ namespace Resturant.Infrastructure.Migrations
                     Identity = table.Column<Guid>(type: "uuid", nullable: false),
                     Created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     TotalPrice = table.Column<decimal>(type: "numeric", nullable: false),
-                    CustomerInformationId = table.Column<int>(type: "integer", nullable: false)
+                    CustomerInformationId = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -99,8 +99,7 @@ namespace Resturant.Infrastructure.Migrations
                         name: "FK_ShoppingCartItems_CustomerInformation_CustomerInformationId",
                         column: x => x.CustomerInformationId,
                         principalTable: "CustomerInformation",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -111,6 +110,8 @@ namespace Resturant.Infrastructure.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "text", nullable: false),
                     Price = table.Column<decimal>(type: "numeric", nullable: false),
+                    ShoppingCartItemsIdentity = table.Column<Guid>(type: "uuid", nullable: false),
+                    ShoppingCartItemsId1 = table.Column<int>(type: "integer", nullable: true),
                     ShoppingCartItemsId = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
@@ -121,12 +122,22 @@ namespace Resturant.Infrastructure.Migrations
                         column: x => x.ShoppingCartItemsId,
                         principalTable: "ShoppingCartItems",
                         principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_MenuItems_ShoppingCartItems_ShoppingCartItemsId1",
+                        column: x => x.ShoppingCartItemsId1,
+                        principalTable: "ShoppingCartItems",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateIndex(
                 name: "IX_MenuItems_ShoppingCartItemsId",
                 table: "MenuItems",
                 column: "ShoppingCartItemsId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MenuItems_ShoppingCartItemsId1",
+                table: "MenuItems",
+                column: "ShoppingCartItemsId1");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ShoppingCartItems_CustomerInformationId",

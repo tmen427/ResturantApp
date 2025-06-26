@@ -12,7 +12,7 @@ using Resturant.Infrastructure.Context;
 namespace Resturant.Infrastructure.Migrations
 {
     [DbContext(typeof(RestaurantContext))]
-    [Migration("20250626165122_fourth8")]
+    [Migration("20250626181006_fourth8")]
     partial class fourth8
     {
         /// <inheritdoc />
@@ -137,12 +137,12 @@ namespace Resturant.Infrastructure.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("numeric");
 
-                    b.Property<int?>("ShoppingCartItemsId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("ShoppingCartItemsIdentity")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ShoppingCartItemsId");
+                    b.HasIndex("ShoppingCartItemsIdentity");
 
                     b.ToTable("MenuItems");
                 });
@@ -196,9 +196,14 @@ namespace Resturant.Infrastructure.Migrations
 
             modelBuilder.Entity("Resturant.Domain.Entity.MenuItems", b =>
                 {
-                    b.HasOne("Resturant.Domain.Entity.ShoppingCartItems", null)
+                    b.HasOne("Resturant.Domain.Entity.ShoppingCartItems", "ShoppingCartItems")
                         .WithMany("MenuItems")
-                        .HasForeignKey("ShoppingCartItemsId");
+                        .HasForeignKey("ShoppingCartItemsIdentity")
+                        .HasPrincipalKey("Identity")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ShoppingCartItems");
                 });
 
             modelBuilder.Entity("Resturant.Domain.Entity.ShoppingCartItems", b =>

@@ -12,8 +12,8 @@ using Resturant.Infrastructure.Context;
 namespace Resturant.Infrastructure.Migrations
 {
     [DbContext(typeof(RestaurantContext))]
-    [Migration("20250626164846_fourth6")]
-    partial class fourth6
+    [Migration("20250626180116_fourth9")]
+    partial class fourth9
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -140,9 +140,17 @@ namespace Resturant.Infrastructure.Migrations
                     b.Property<int?>("ShoppingCartItemsId")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("ShoppingCartItemsId1")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("ShoppingCartItemsIdentity")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ShoppingCartItemsId");
+
+                    b.HasIndex("ShoppingCartItemsId1");
 
                     b.ToTable("MenuItems");
                 });
@@ -158,7 +166,7 @@ namespace Resturant.Infrastructure.Migrations
                     b.Property<DateTime>("Created")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("CustomerInformationId")
+                    b.Property<int?>("CustomerInformationId")
                         .HasColumnType("integer");
 
                     b.Property<Guid>("Identity")
@@ -199,15 +207,19 @@ namespace Resturant.Infrastructure.Migrations
                     b.HasOne("Resturant.Domain.Entity.ShoppingCartItems", null)
                         .WithMany("MenuItems")
                         .HasForeignKey("ShoppingCartItemsId");
+
+                    b.HasOne("Resturant.Domain.Entity.ShoppingCartItems", "ShoppingCartItems")
+                        .WithMany()
+                        .HasForeignKey("ShoppingCartItemsId1");
+
+                    b.Navigation("ShoppingCartItems");
                 });
 
             modelBuilder.Entity("Resturant.Domain.Entity.ShoppingCartItems", b =>
                 {
                     b.HasOne("Resturant.Domain.Entity.CustomerInformation", "CustomerInformation")
                         .WithMany()
-                        .HasForeignKey("CustomerInformationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("CustomerInformationId");
 
                     b.Navigation("CustomerInformation");
                 });

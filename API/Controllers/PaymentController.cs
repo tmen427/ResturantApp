@@ -74,7 +74,6 @@ namespace API.Controllers
         }
         
         
-        
         // [HttpPost("PaymentInformation")]
         // public async Task<ActionResult<CustomerInformation>> PostOrderInformation(CustomerInformation customerInformation)
         // {

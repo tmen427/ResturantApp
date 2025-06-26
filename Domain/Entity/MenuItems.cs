@@ -11,10 +11,11 @@ public class MenuItems
     public decimal Price { get;  set; }
     
     
+    public Guid ShoppingCartItemsIdentity { get; set; }
+    
+    public ShoppingCartItems? ShoppingCartItems { get; set; }
     
     
-    
-
     public decimal CheckMenuItemPrices(string itemName)
     {
         switch (itemName)

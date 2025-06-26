@@ -87,9 +87,16 @@ namespace Resturant.Infrastructure.Context
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<ShoppingCartItems>().HasMany(e => e.MenuItems)
-                .WithOne();
-        //   modelBuilder.ApplyConfiguration(new SeedMenuItems()); 
+
+
+            modelBuilder.Entity<ShoppingCartItems>()
+                .HasMany(e => e.MenuItems)
+                .WithOne(e => e.ShoppingCartItems)
+                .HasForeignKey(e => e.ShoppingCartItemsIdentity)
+                .HasPrincipalKey(e => e.Identity);
+
+
+            //   modelBuilder.ApplyConfiguration(new SeedMenuItems()); 
         }
         
     }
