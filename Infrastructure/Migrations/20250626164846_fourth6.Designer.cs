@@ -12,8 +12,8 @@ using Resturant.Infrastructure.Context;
 namespace Resturant.Infrastructure.Migrations
 {
     [DbContext(typeof(RestaurantContext))]
-    [Migration("20250626161051_fourth1")]
-    partial class fourth1
+    [Migration("20250626164846_fourth6")]
+    partial class fourth6
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -158,6 +158,9 @@ namespace Resturant.Infrastructure.Migrations
                     b.Property<DateTime>("Created")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int>("CustomerInformationId")
+                        .HasColumnType("integer");
+
                     b.Property<Guid>("Identity")
                         .HasColumnType("uuid");
 
@@ -165,6 +168,8 @@ namespace Resturant.Infrastructure.Migrations
                         .HasColumnType("numeric");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CustomerInformationId");
 
                     b.ToTable("ShoppingCartItems");
                 });
@@ -194,6 +199,17 @@ namespace Resturant.Infrastructure.Migrations
                     b.HasOne("Resturant.Domain.Entity.ShoppingCartItems", null)
                         .WithMany("MenuItems")
                         .HasForeignKey("ShoppingCartItemsId");
+                });
+
+            modelBuilder.Entity("Resturant.Domain.Entity.ShoppingCartItems", b =>
+                {
+                    b.HasOne("Resturant.Domain.Entity.CustomerInformation", "CustomerInformation")
+                        .WithMany()
+                        .HasForeignKey("CustomerInformationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CustomerInformation");
                 });
 
             modelBuilder.Entity("Resturant.Domain.Entity.ShoppingCartItems", b =>

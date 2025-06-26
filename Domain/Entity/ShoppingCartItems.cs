@@ -12,6 +12,8 @@ public class ShoppingCartItems
     public List<MenuItems> MenuItems { get; set; } = new(); 
     
     //realtionship needs to be made with customerinformation
+    public int? CustomerInformationId { get; set; }
+    public CustomerInformation CustomerInformation { get; set; } 
 
 }
 

@@ -127,40 +127,40 @@ namespace API.Controllers
          [HttpPost("ShoppingCartItems")]
          public async Task<ActionResult<TempDto>> AddMenuItems(TempDto dto)
          {
-             var checkNewMenuItem =
-                 await _context.ShoppingCartItems.SingleOrDefaultAsync(x => x.Identity == dto.GuidId);
+             //possibly use single or default
+             var shoppingCartItems = await _shoppingCartRepository.ReturnCartItemsByGuidAsync(dto.GuidId.ToString());
+             //customerId will always be initially null!
              
-             //if paid exists means you have already paid-should not paid be at this point
-             var paid = 
-                 await _context.CustomerInformation.SingleOrDefaultAsync(x => x.TempCartsIdentity == dto.GuidId);
+             int? customerId = shoppingCartItems?.CustomerInformationId; 
              
              //create a new menu item
-           if (checkNewMenuItem is null && paid is null )
+           if (shoppingCartItems is null)
            {
                string name = dto.Name!;
+               decimal initialprice = CheckingPrices.CheckMenuItemPricesFromStatic(name);
                
-               
-               //possibly refactor this 
-               decimal price = CheckingPrices.CheckMenuItemPricesFromStatic(name);
-               
+               //make a new shopping cart
                ShoppingCartItems shoppingcartitems = new ShoppingCartItems();
                    shoppingcartitems.Identity = dto.GuidId;
                    shoppingcartitems.Created = DateTime.UtcNow;
-                   shoppingcartitems.TotalPrice = price;
+                   shoppingcartitems.TotalPrice = initialprice;
+                   shoppingcartitems.CustomerInformationId = null; 
                    
                    var menuItems = new MenuItems();
                    menuItems.Name = name;
                    menuItems.Price = menuItems.CheckMenuItemPrices(name);
                    shoppingcartitems.MenuItems.Add(menuItems);
               
+                
                await _context.AddAsync(shoppingcartitems);
-               await _context.SaveChangesAsync();
-             
+   
+               await _shoppingCartRepository.SaveCartItemsAsync();
               // return CreatedAtAction("TemporaryCartItemByGuid", new {dto.GuidId}, temporaryCartItems);
-              return Ok(new { Name = name, Price = price });
+              return Ok(new { Name = name, Price = initialprice });
       
            }
-           else if (checkNewMenuItem != null && paid is null)
+           //create a new menu Item 
+           else
            {
                string name = dto.Name!;
                
@@ -168,22 +168,18 @@ namespace API.Controllers
                menuItems.Name = name;
                menuItems.Price = menuItems.CheckMenuItemPrices(name); 
                
-              checkNewMenuItem.MenuItems.Add(menuItems);
+               shoppingCartItems.MenuItems.Add(menuItems);
               await _shoppingCartRepository.SaveCartItemsAsync();
               
              //update totalprice
                var totalPriceMenuItems = _shoppingCartRepository.TotalMenuPrice(dto.GuidId);
-               checkNewMenuItem.TotalPrice = totalPriceMenuItems;
-              await _shoppingCartRepository.SaveCartItemsAsync();
-               
-               
+                shoppingCartItems.TotalPrice = totalPriceMenuItems;
+               await _shoppingCartRepository.SaveCartItemsAsync();
+              
              //  return CreatedAtAction("TemporaryCartItemByGuid", new {dto.Name}, new {Name = name, Price = price});
              return Ok(new { Name = name, Price = menuItems.Price });
            }
-           else
-           {
-               return BadRequest("This user has already paid!!!");
-           }
+       
          }
     }
 }

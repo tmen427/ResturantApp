@@ -48,9 +48,11 @@ public class ShoppingCartRepo : IRepository
     public async Task<List<MenuItems>> ReturnMenuItemListByGuid(string guidId)
     {
         
-        return  await _context.ShoppingCartItems.Include("MenuItems")
+        var shoppingCart =   await _context.ShoppingCartItems.Include("MenuItems")
             .Where(x => x.Identity.ToString() == guidId)
             .SelectMany(x => x.MenuItems).ToListAsync();
+        
+        return shoppingCart;
       //      .Select(x => new MenuDTO()
         //        { Id = x.Id, Name = x.Name, Price = x.Price, GuidId = x.ShoppingCartItemsIdentity.ToString() })
         //    .ToListAsync();

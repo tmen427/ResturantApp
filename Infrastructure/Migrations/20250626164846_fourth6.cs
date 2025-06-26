@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Resturant.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class fourth1 : Migration
+    public partial class fourth6 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -89,11 +89,18 @@ namespace Resturant.Infrastructure.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Identity = table.Column<Guid>(type: "uuid", nullable: false),
                     Created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    TotalPrice = table.Column<decimal>(type: "numeric", nullable: false)
+                    TotalPrice = table.Column<decimal>(type: "numeric", nullable: false),
+                    CustomerInformationId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_ShoppingCartItems", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ShoppingCartItems_CustomerInformation_CustomerInformationId",
+                        column: x => x.CustomerInformationId,
+                        principalTable: "CustomerInformation",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -120,6 +127,11 @@ namespace Resturant.Infrastructure.Migrations
                 name: "IX_MenuItems_ShoppingCartItemsId",
                 table: "MenuItems",
                 column: "ShoppingCartItemsId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ShoppingCartItems_CustomerInformationId",
+                table: "ShoppingCartItems",
+                column: "CustomerInformationId");
         }
 
         /// <inheritdoc />
@@ -127,9 +139,6 @@ namespace Resturant.Infrastructure.Migrations
         {
             migrationBuilder.DropTable(
                 name: "BookingInformation");
-
-            migrationBuilder.DropTable(
-                name: "CustomerInformation");
 
             migrationBuilder.DropTable(
                 name: "CustomerInquiryInformation");
@@ -142,6 +151,9 @@ namespace Resturant.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "ShoppingCartItems");
+
+            migrationBuilder.DropTable(
+                name: "CustomerInformation");
         }
     }
 }
