@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using MediatR;
 using Resturant.Application.DomainEventHandler;
 using Resturant.Domain.EventSourcing;
-
+using Resturant.Infrastructure.SeedData;
 
 
 namespace Resturant.Infrastructure.Context
@@ -34,6 +34,7 @@ namespace Resturant.Infrastructure.Context
       //  private readonly IMediator _mediator;
 
         public DbSet<CustomerInformation> CustomerInformation { get; set; }
+        
         //   public DbSet<DomainEvent> DomainEvents { get; set; }    
         public DbSet<Event> Events { get; set; } 
         public DbSet<ShoppingCartItems> ShoppingCartItems { get; set; }
@@ -86,19 +87,10 @@ namespace Resturant.Infrastructure.Context
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-         
-            
-          //  modelBuilder.Entity<TemporaryCartItems>().HasMany(x => x.MenuItems);
-
-            modelBuilder.Entity<MenuItems>().HasOne(p => p.ShoppingCartItems).WithMany(p => p.MenuItems)
-                .HasForeignKey(p => p.ShoppingCartItemsIdentity).HasPrincipalKey(x=>x.Identity);
-          
-             
-      
+            modelBuilder.Entity<ShoppingCartItems>().HasMany(e => e.MenuItems)
+                .WithOne();
+        //   modelBuilder.ApplyConfiguration(new SeedMenuItems()); 
         }
-
-
-
-
+        
     }
 }

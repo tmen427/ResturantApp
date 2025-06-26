@@ -8,11 +8,11 @@ public class ShoppingCartItems
     public Guid Identity { get; set; }
     public DateTime Created { get; set; }
     public decimal TotalPrice {get;set;}
-    public List<MenuItems> MenuItems {get;set;} = new List<MenuItems>();
     
- 
+    public List<MenuItems> MenuItems { get; set; } = new(); 
+    
+    //realtionship needs to be made with customerinformation
 
-    
 }
 
 

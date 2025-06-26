@@ -1,21 +1,8 @@
-using System.ComponentModel.DataAnnotations;
+namespace API;
 
-namespace Resturant.Domain.Entity;
-
-
-
-public class MenuItems
+public static class CheckingPrices
 {
-    public int Id { get; set; }
-    public string Name { get; set; }
-    public decimal Price { get;  set; }
-    
-    
-    
-    
-    
-
-    public decimal CheckMenuItemPrices(string itemName)
+    public static decimal CheckMenuItemPricesFromStatic(string itemName)
     {
         switch (itemName)
         {
@@ -35,8 +22,4 @@ public class MenuItems
             default: throw new Exception("That is not a valid menu item- " + itemName);
         }
     }
-
-
-
-
 }

@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Resturant.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class second1 : Migration
+    public partial class fourth1 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -32,22 +32,6 @@ namespace Resturant.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Contacts",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(type: "text", nullable: false),
-                    Email = table.Column<string>(type: "text", nullable: true),
-                    Subject = table.Column<string>(type: "text", nullable: true),
-                    Message = table.Column<string>(type: "text", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Contacts", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "CustomerInformation",
                 columns: table => new
                 {
@@ -65,6 +49,22 @@ namespace Resturant.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_CustomerInformation", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "CustomerInquiryInformation",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Email = table.Column<string>(type: "text", nullable: true),
+                    Subject = table.Column<string>(type: "text", nullable: true),
+                    Message = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CustomerInquiryInformation", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -94,7 +94,6 @@ namespace Resturant.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_ShoppingCartItems", x => x.Id);
-                    table.UniqueConstraint("AK_ShoppingCartItems_Identity", x => x.Identity);
                 });
 
             migrationBuilder.CreateTable(
@@ -105,23 +104,22 @@ namespace Resturant.Infrastructure.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "text", nullable: false),
                     Price = table.Column<decimal>(type: "numeric", nullable: false),
-                    ShoppingCartItemsIdentity = table.Column<Guid>(type: "uuid", nullable: false)
+                    ShoppingCartItemsId = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_MenuItems", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_MenuItems_ShoppingCartItems_ShoppingCartItemsIdentity",
-                        column: x => x.ShoppingCartItemsIdentity,
+                        name: "FK_MenuItems_ShoppingCartItems_ShoppingCartItemsId",
+                        column: x => x.ShoppingCartItemsId,
                         principalTable: "ShoppingCartItems",
-                        principalColumn: "Identity",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_MenuItems_ShoppingCartItemsIdentity",
+                name: "IX_MenuItems_ShoppingCartItemsId",
                 table: "MenuItems",
-                column: "ShoppingCartItemsIdentity");
+                column: "ShoppingCartItemsId");
         }
 
         /// <inheritdoc />
@@ -131,10 +129,10 @@ namespace Resturant.Infrastructure.Migrations
                 name: "BookingInformation");
 
             migrationBuilder.DropTable(
-                name: "Contacts");
+                name: "CustomerInformation");
 
             migrationBuilder.DropTable(
-                name: "CustomerInformation");
+                name: "CustomerInquiryInformation");
 
             migrationBuilder.DropTable(
                 name: "Events");

@@ -12,8 +12,8 @@ using Resturant.Infrastructure.Context;
 namespace Resturant.Infrastructure.Migrations
 {
     [DbContext(typeof(RestaurantContext))]
-    [Migration("20250624225122_second3")]
-    partial class second3
+    [Migration("20250626161051_fourth1")]
+    partial class fourth1
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -137,12 +137,12 @@ namespace Resturant.Infrastructure.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("numeric");
 
-                    b.Property<Guid>("ShoppingCartItemsIdentity")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("ShoppingCartItemsId")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ShoppingCartItemsIdentity");
+                    b.HasIndex("ShoppingCartItemsId");
 
                     b.ToTable("MenuItems");
                 });
@@ -191,14 +191,9 @@ namespace Resturant.Infrastructure.Migrations
 
             modelBuilder.Entity("Resturant.Domain.Entity.MenuItems", b =>
                 {
-                    b.HasOne("Resturant.Domain.Entity.ShoppingCartItems", "ShoppingCartItems")
+                    b.HasOne("Resturant.Domain.Entity.ShoppingCartItems", null)
                         .WithMany("MenuItems")
-                        .HasForeignKey("ShoppingCartItemsIdentity")
-                        .HasPrincipalKey("Identity")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ShoppingCartItems");
+                        .HasForeignKey("ShoppingCartItemsId");
                 });
 
             modelBuilder.Entity("Resturant.Domain.Entity.ShoppingCartItems", b =>

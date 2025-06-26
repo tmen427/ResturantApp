@@ -134,12 +134,12 @@ namespace Resturant.Infrastructure.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("numeric");
 
-                    b.Property<Guid>("ShoppingCartItemsIdentity")
-                        .HasColumnType("uuid");
+                    b.Property<int?>("ShoppingCartItemsId")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ShoppingCartItemsIdentity");
+                    b.HasIndex("ShoppingCartItemsId");
 
                     b.ToTable("MenuItems");
                 });
@@ -188,14 +188,9 @@ namespace Resturant.Infrastructure.Migrations
 
             modelBuilder.Entity("Resturant.Domain.Entity.MenuItems", b =>
                 {
-                    b.HasOne("Resturant.Domain.Entity.ShoppingCartItems", "ShoppingCartItems")
+                    b.HasOne("Resturant.Domain.Entity.ShoppingCartItems", null)
                         .WithMany("MenuItems")
-                        .HasForeignKey("ShoppingCartItemsIdentity")
-                        .HasPrincipalKey("Identity")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ShoppingCartItems");
+                        .HasForeignKey("ShoppingCartItemsId");
                 });
 
             modelBuilder.Entity("Resturant.Domain.Entity.ShoppingCartItems", b =>
