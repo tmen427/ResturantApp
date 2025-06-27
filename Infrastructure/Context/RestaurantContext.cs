@@ -6,6 +6,7 @@ using Resturant.Domain.Entity;
 using Resturant.Domain.DomainEvents;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using MediatR;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Resturant.Application.DomainEventHandler;
 using Resturant.Domain.EventSourcing;
 using Resturant.Infrastructure.SeedData;
@@ -82,6 +83,8 @@ namespace Resturant.Infrastructure.Context
         {
          //   optionsBuilder.EnableSensitiveDataLogging();
           //  optionsBuilder.LogTo(Console.WriteLine);    
+          
+          optionsBuilder.ConfigureWarnings(x => x.Ignore(RelationalEventId.PendingModelChangesWarning));
         }
         
 
@@ -96,7 +99,8 @@ namespace Resturant.Infrastructure.Context
                 .HasPrincipalKey(e => e.Identity);
 
 
-            //   modelBuilder.ApplyConfiguration(new SeedMenuItems()); 
+             modelBuilder.ApplyConfiguration(new SeedShoppingCartItems()); 
+             modelBuilder.ApplyConfiguration(new SeedMenuItems()); 
         }
         
     }

@@ -142,6 +142,43 @@ namespace Resturant.Infrastructure.Migrations
                     b.HasIndex("ShoppingCartItemsIdentity");
 
                     b.ToTable("MenuItems");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Egg Roll Platter",
+                            Price = 14.95m,
+                            ShoppingCartItemsIdentity = new Guid("3fa85f64-5717-4562-b3fc-2c963f66afa6")
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Papaya Salad",
+                            Price = 8.95m,
+                            ShoppingCartItemsIdentity = new Guid("3fa85f64-5717-4562-b3fc-2c963f66afa6")
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Tofu",
+                            Price = 10.5m,
+                            ShoppingCartItemsIdentity = new Guid("3fa85f64-5717-4562-b3fc-2c963f66afa6")
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Name = "Chopped Beef",
+                            Price = 12.95m,
+                            ShoppingCartItemsIdentity = new Guid("3fa85f64-5717-4562-b3fc-2c963f66afa6")
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Name = "Veggie Platter",
+                            Price = 8.95m,
+                            ShoppingCartItemsIdentity = new Guid("3fa85f64-5717-4562-b3fc-2c963f66afa6")
+                        });
                 });
 
             modelBuilder.Entity("Resturant.Domain.Entity.ShoppingCartItems", b =>
@@ -169,6 +206,15 @@ namespace Resturant.Infrastructure.Migrations
                     b.HasIndex("CustomerInformationId");
 
                     b.ToTable("ShoppingCartItems");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Created = new DateTime(2025, 6, 27, 17, 38, 10, 800, DateTimeKind.Utc).AddTicks(8050),
+                            Identity = new Guid("3fa85f64-5717-4562-b3fc-2c963f66afa6"),
+                            TotalPrice = 0m
+                        });
                 });
 
             modelBuilder.Entity("Resturant.Domain.EventSourcing.Event", b =>

@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Data;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
-
+using Hangfire.Dashboard;
 using Resturant.Domain.Entity;
 
 using MediatR;
@@ -131,9 +131,9 @@ namespace API.Controllers
              var shoppingCartItems = await _shoppingCartRepository.ReturnCartItemsByGuidAsync(dto.GuidId.ToString());
              //customerId will always be initially null!
              
-             int? customerId = shoppingCartItems?.CustomerInformationId; 
+        //     int? customerId = shoppingCartItems?.CustomerInformationId; 
              
-             //create a new menu item
+             //create a new shopping cart 
            if (shoppingCartItems is null)
            {
                string name = dto.Name!;
@@ -144,11 +144,12 @@ namespace API.Controllers
                    shoppingcartitems.Identity = dto.GuidId;
                    shoppingcartitems.Created = DateTime.UtcNow;
                    shoppingcartitems.TotalPrice = initialprice;
-                   shoppingcartitems.CustomerInformationId = null; 
+                //   shoppingcartitems.CustomerInformationId = null; 
                    
                    var menuItems = new MenuItems();
                    menuItems.Name = name;
                    menuItems.Price = menuItems.CheckMenuItemPrices(name);
+                   
                    shoppingcartitems.MenuItems.Add(menuItems);
               
                    
@@ -158,7 +159,7 @@ namespace API.Controllers
               return Ok(new { Name = name, Price = initialprice });
       
            }
-           //create a new menu Item 
+           //add new menu items to the shopping cart
            else
            {
                string name = dto.Name!;

@@ -4,10 +4,12 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace Resturant.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class fourth9 : Migration
+    public partial class fourth : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -95,6 +97,7 @@ namespace Resturant.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_ShoppingCartItems", x => x.Id);
+                    table.UniqueConstraint("AK_ShoppingCartItems_Identity", x => x.Identity);
                     table.ForeignKey(
                         name: "FK_ShoppingCartItems_CustomerInformation_CustomerInformationId",
                         column: x => x.CustomerInformationId,
@@ -110,34 +113,40 @@ namespace Resturant.Infrastructure.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "text", nullable: false),
                     Price = table.Column<decimal>(type: "numeric", nullable: false),
-                    ShoppingCartItemsIdentity = table.Column<Guid>(type: "uuid", nullable: false),
-                    ShoppingCartItemsId1 = table.Column<int>(type: "integer", nullable: true),
-                    ShoppingCartItemsId = table.Column<int>(type: "integer", nullable: true)
+                    ShoppingCartItemsIdentity = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_MenuItems", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_MenuItems_ShoppingCartItems_ShoppingCartItemsId",
-                        column: x => x.ShoppingCartItemsId,
+                        name: "FK_MenuItems_ShoppingCartItems_ShoppingCartItemsIdentity",
+                        column: x => x.ShoppingCartItemsIdentity,
                         principalTable: "ShoppingCartItems",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_MenuItems_ShoppingCartItems_ShoppingCartItemsId1",
-                        column: x => x.ShoppingCartItemsId1,
-                        principalTable: "ShoppingCartItems",
-                        principalColumn: "Id");
+                        principalColumn: "Identity",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.InsertData(
+                table: "ShoppingCartItems",
+                columns: new[] { "Id", "Created", "CustomerInformationId", "Identity", "TotalPrice" },
+                values: new object[] { 1, new DateTime(2025, 6, 27, 17, 38, 10, 800, DateTimeKind.Utc).AddTicks(8050), null, new Guid("3fa85f64-5717-4562-b3fc-2c963f66afa6"), 0m });
+
+            migrationBuilder.InsertData(
+                table: "MenuItems",
+                columns: new[] { "Id", "Name", "Price", "ShoppingCartItemsIdentity" },
+                values: new object[,]
+                {
+                    { 1, "Egg Roll Platter", 14.95m, new Guid("3fa85f64-5717-4562-b3fc-2c963f66afa6") },
+                    { 2, "Papaya Salad", 8.95m, new Guid("3fa85f64-5717-4562-b3fc-2c963f66afa6") },
+                    { 3, "Tofu", 10.5m, new Guid("3fa85f64-5717-4562-b3fc-2c963f66afa6") },
+                    { 4, "Chopped Beef", 12.95m, new Guid("3fa85f64-5717-4562-b3fc-2c963f66afa6") },
+                    { 5, "Veggie Platter", 8.95m, new Guid("3fa85f64-5717-4562-b3fc-2c963f66afa6") }
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_MenuItems_ShoppingCartItemsId",
+                name: "IX_MenuItems_ShoppingCartItemsIdentity",
                 table: "MenuItems",
-                column: "ShoppingCartItemsId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_MenuItems_ShoppingCartItemsId1",
-                table: "MenuItems",
-                column: "ShoppingCartItemsId1");
+                column: "ShoppingCartItemsIdentity");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ShoppingCartItems_CustomerInformationId",
