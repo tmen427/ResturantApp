@@ -37,16 +37,16 @@ namespace API.Controllers
         }
         
 
-        [HttpGet("TempItemsTable")] 
-        public async Task<IActionResult> TempCartItems()
-        {
-            var shoppingCartItems = await _shoppingCartRepository.ReturnListItemsAsync(); 
-            return shoppingCartItems.Count == 0 ? NotFound() : Ok(shoppingCartItems);
-        }
+        // [HttpGet("TempItemsTable")] 
+        // public async Task<IActionResult> TempCartItems()
+        // {
+        //     var shoppingCartItems = await _shoppingCartRepository.ReturnListItemsAsync(); 
+        //     return shoppingCartItems.Count == 0 ? NotFound() : Ok(shoppingCartItems);
+        // }
 
         
         [HttpGet("GetTotalPrice")]
-        public async Task<IActionResult> GetTempsItemsTableByGuid(string guid = "3fa85f64-5717-4562-b3fc-2c963f66afa6")
+        public async Task<IActionResult> GetShoppingCartItemsByGuid(string guid = "3fa85f64-5717-4562-b3fc-2c963f66afa6")
         {
            var shoppingCartItems = await _shoppingCartRepository.ReturnCartItemsByGuidAsync(guid);
            return shoppingCartItems != null ?  Ok(shoppingCartItems) : NotFound();
@@ -101,7 +101,6 @@ namespace API.Controllers
              return menuDto.Any() ? Ok(menuDTOSize) : NotFound();
          }
          
-
          
          [ProducesResponseType(200)]
          [HttpDelete("DeleteMenuItem")]
@@ -109,17 +108,19 @@ namespace API.Controllers
          {
             var menuItem = await _shoppingCartRepository.FindByPrimaryKey(id); 
             if (menuItem is not null)
-            {
+            { 
                 _context.MenuItems.Remove(menuItem);
+                await _shoppingCartRepository.SaveCartItemsAsync();
+                //update total price
+                var totalPriceMenuItems = _shoppingCartRepository.TotalMenuPrice(guidId); 
+                var shoppingCartItems = await _shoppingCartRepository.ReturnCartItemsByGuidAsync(guidId.ToString());
+                shoppingCartItems!.TotalPrice = totalPriceMenuItems;
+                await _context.SaveChangesAsync();
+                
+            return Ok("The item was removed from the shopping cart!"); 
             }
-            await _shoppingCartRepository.SaveCartItemsAsync();
+            return NotFound("No menu item was found");
             
-            //update total price
-            var totalPriceMenuItems = _shoppingCartRepository.TotalMenuPrice(guidId); 
-            var shoppingCartItems = await _shoppingCartRepository.ReturnCartItemsByGuidAsync(guidId.ToString());
-            shoppingCartItems!.TotalPrice = totalPriceMenuItems;
-            await _context.SaveChangesAsync();
-            return Ok(); 
          }
          
          
@@ -141,6 +142,8 @@ namespace API.Controllers
                
                //make a new shopping cart
                ShoppingCartItems shoppingcartitems = new ShoppingCartItems();
+               
+                            //probably a better idea for the backend to generate the guid 
                    shoppingcartitems.Identity = dto.GuidId;
                    shoppingcartitems.Created = DateTime.UtcNow;
                    shoppingcartitems.TotalPrice = initialprice;
