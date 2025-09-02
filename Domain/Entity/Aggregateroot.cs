@@ -18,7 +18,6 @@ namespace Resturant.Domain.Entity
         {
             
         }
-
         //this value cannot be null when initilizaing
         private List<INotification>? _domainEvents = new();
 

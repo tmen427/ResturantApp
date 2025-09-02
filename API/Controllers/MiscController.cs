@@ -34,7 +34,7 @@ public class MiscController : Controller
     }
     
     
-    [HttpGet("CreateGuide")]
+    [HttpGet("CreateGuideForFrontend")]
     public IActionResult MakeGuid()
     {
         var guid = Guid.NewGuid();

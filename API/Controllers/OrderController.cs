@@ -35,19 +35,13 @@ namespace API.Controllers
            _shoppingCartRepository = shoppingCartRepository;
            _logger = logger;
         }
-        
 
-        // [HttpGet("TempItemsTable")] 
-        // public async Task<IActionResult> TempCartItems()
-        // {
-        //     var shoppingCartItems = await _shoppingCartRepository.ReturnListItemsAsync(); 
-        //     return shoppingCartItems.Count == 0 ? NotFound() : Ok(shoppingCartItems);
-        // }
 
         
         [HttpGet("GetTotalPrice")]
         public async Task<IActionResult> GetShoppingCartItemsByGuid(string guid = "3fa85f64-5717-4562-b3fc-2c963f66afa6")
         {
+            
            var shoppingCartItems = await _shoppingCartRepository.ReturnCartItemsByGuidAsync(guid);
            return shoppingCartItems != null ?  Ok(shoppingCartItems) : NotFound();
         }
@@ -56,9 +50,9 @@ namespace API.Controllers
          [HttpGet("GetAllTempItems")]
          public async Task<ActionResult<IEnumerable<MenuDTO>>> ShoppingCartItems()
          {
-             var menuDTO = (await _shoppingCartRepository.ReturnMenuItemsListAsync())
+             var menuDtos = (await _shoppingCartRepository.ReturnMenuItemsListAsync())
                  .Select(x => new MenuDTO() { Id = x.Id, Name = x.Name, Price = x.Price});
-             return menuDTO.Any() ? Ok(menuDTO) : NotFound("no value was found");
+             return menuDtos.Any() ? Ok(menuDtos) : NotFound("no value was found");
          }
 
 
@@ -71,6 +65,7 @@ namespace API.Controllers
              // var shoppingCartItems = await _context.ShoppingCartItems.Include("MenuItems").Where(x => x.Identity == guidIdValue).SelectMany(x=>x.MenuItems).ToListAsync();
              // var menus = shoppingCartItems.Select(x => new MenuDTO()
              // {
+
              //     Id = x.Id,
              //     Name = x.Name,
              //     Price = x.Price,
@@ -95,10 +90,12 @@ namespace API.Controllers
                  .Select(x => new MenuDTO()
                      { Id = x.Id, Name = x.Name, Price = x.Price})
                  .ToList();
+   
 
              int menuDTOSize = menuDto.Count; 
             
-             return menuDto.Any() ? Ok(menuDTOSize) : NotFound();
+             //may not want to return zero if nothing is found-but return Notfound(0) causes error on frontend
+             return menuDto.Any() ? Ok(menuDTOSize) : NotFound(0); 
          }
          
          
@@ -116,8 +113,8 @@ namespace API.Controllers
                 var shoppingCartItems = await _shoppingCartRepository.ReturnCartItemsByGuidAsync(guidId.ToString());
                 shoppingCartItems!.TotalPrice = totalPriceMenuItems;
                 await _context.SaveChangesAsync();
-                
-            return Ok("The item was removed from the shopping cart!"); 
+    
+                return Ok(); 
             }
             return NotFound("No menu item was found");
             
@@ -130,7 +127,7 @@ namespace API.Controllers
          {
              //possibly use single or default
              var shoppingCartItems = await _shoppingCartRepository.ReturnCartItemsByGuidAsync(dto.GuidId.ToString());
-             //customerId will always be initially null!
+    
              
         //     int? customerId = shoppingCartItems?.CustomerInformationId; 
              
@@ -143,7 +140,7 @@ namespace API.Controllers
                //make a new shopping cart
                ShoppingCartItems shoppingcartitems = new ShoppingCartItems();
                
-                            //probably a better idea for the backend to generate the guid 
+  
                    shoppingcartitems.Identity = dto.GuidId;
                    shoppingcartitems.Created = DateTime.UtcNow;
                    shoppingcartitems.TotalPrice = initialprice;

@@ -29,11 +29,19 @@ namespace API.Controllers
         {
             //use a dto to get menu items also 
             var orders = await _context.CustomerInformation.ToListAsync();
+            
             if (orders.Any())
             {
                 return Ok(orders);
             }
-            else return  BadRequest("No orders were currently found in the database.");
+            return BadRequest("No orders were found.");
+        }
+
+
+        public class CustomerInformationdto 
+        {
+            public int Id { get; set; }
+            public string Name { get; set; }
         }
         
         public class ViewsDto
@@ -74,58 +82,68 @@ namespace API.Controllers
         }
         
         
-        // [HttpPost("PaymentInformation")]
-        // public async Task<ActionResult<CustomerInformation>> PostOrderInformation(CustomerInformation customerInformation)
-        // {
-        //
-        //     //check if the guid for the order exists-it shouldn't but just in case 
-        //     var orders = await _context.CustomerInformation.FirstOrDefaultAsync(x=>x.TempCartsIdentity.ToString() == customerInformation.Id);
-        //    
-        //     if (orders != null)
-        //     {
-        //         //Idempotent check-no other users should have already paid for the cartItems-if they have this error will popup 
-        //       return BadRequest("The order has already been processed-paid");
-        //     }
-        //     
-        //     var cartGuid = await _context.TemporaryCartItems.FirstOrDefaultAsync(x=>x.Indentity.ToString() == customerInformation.GuidId);
-        //     _logger.LogInformation(customerInformation.GuidId);
-        //     if (cartGuid == null)
-        //     {
-        //         _logger.LogWarning("this value should not be null"); 
-        //     }
-        //     
-        //     
-        //     var  convertStringToGuid =  Guid.TryParse(orderInformation.GuidId, out var newGuid);
-        //  
-        //     //we assume guid values will always be unique 
-        //     if (cartGuid is not null)
-        //     { 
-        //      
-        //         CustomerInformation customer = new CustomerInformation()
-        //         {
-        //             Credit = orderInformation.Credit,
-        //             NameonCard = orderInformation.NameonCard,
-        //             CreditCardNumber = orderInformation.CreditCardNumber,
-        //             Expiration = orderInformation.Expiration,
-        //             CVV = orderInformation.CVV,
-        //             UserName = orderInformation.UserName,
-        //             TempCartsIdentity = newGuid,
-        //             Paid = true
-        //         };
-        //
-        //         await _context.OrderInformation.AddAsync(customer);
-        //         await _context.SaveChangesAsync();
-        //
-        //         return Ok(order);
-        //     }
-        //     else
-        //     {
-        //         return BadRequest("There is no ssociated guidId from the menu");
-        //     }
-        //
-        // }
+        public class CustomerInformationDTO
+        {
+            public string? Credit { get; set; }
+            public string? NameonCard { get; set; }
+            public string? CreditCardNumber { get; set; }
+            public string? Expiration { get; set; }
+            public string? CVV { get; set; }
+            public string? UserName { get; set; }
         
+            public bool Paid { get; set; } = false;
+            public string CartsIdentity { get; set; }
+        
+        }
 
 
+
+
+        [HttpPost("PaymentInformation")]
+        public async Task<ActionResult<CustomerInformation>> PostOrderInformation(
+            CustomerInformationDTO customerInformationDto)
+        {
+
+            //we assume all the guids are unique
+            var orders = await _context.CustomerInformation.FirstOrDefaultAsync(x =>
+                x.TempCartsIdentity.ToString() == customerInformationDto.CartsIdentity);
+
+            if (orders != null)
+            {
+                return BadRequest("Another pre-existing user has that guid");
+            }
+            
+            var convertGuid = Guid.TryParse(customerInformationDto.CartsIdentity, out var tempGuid);
+
+            _logger.LogCritical(customerInformationDto.CartsIdentity);
+
+            
+            //check to make sure the guid must exist in the other table 
+            var checkingShoppingCart = await _context.ShoppingCartItems.FirstOrDefaultAsync(x=> x.Identity.ToString() == customerInformationDto.CartsIdentity);
+            
+            
+            
+            if (convertGuid && checkingShoppingCart!= null)
+            {
+                CustomerInformation customer = new CustomerInformation()
+                {
+                    Credit = customerInformationDto.Credit,
+                    NameonCard = customerInformationDto.NameonCard,
+                    CreditCardNumber = customerInformationDto.CreditCardNumber,
+                    Expiration = customerInformationDto.Expiration,
+                    CVV = customerInformationDto.CVV,
+                    UserName = customerInformationDto.UserName,
+                    TempCartsIdentity = tempGuid,
+                    Paid = true
+                };
+
+                await _context.CustomerInformation.AddAsync(customer);
+                await _context.SaveChangesAsync();
+
+                return Ok(customer);
+            }
+
+            return BadRequest("Invalid guid");
+        }
     }
-}
+    }
