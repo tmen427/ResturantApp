@@ -10,9 +10,9 @@ namespace Restuarant.Application.DTOConversions
     {
 
       
-        public static CustomerInformation ConvertFromOrderDTO(CustomerDto dto)
+        public static CustomerPaymentInformation ConvertFromOrderDTO(CustomerDto dto)
         {
-            return new CustomerInformation()
+            return new CustomerPaymentInformation()
             {
                 Credit = dto.Credit,
                 NameonCard = dto.NameonCard,

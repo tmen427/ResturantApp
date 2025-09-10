@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Resturant.Infrastructure.Context;
@@ -11,9 +12,11 @@ using Resturant.Infrastructure.Context;
 namespace Resturant.Infrastructure.Migrations
 {
     [DbContext(typeof(RestaurantContext))]
-    partial class RestaurantContextModelSnapshot : ModelSnapshot
+    [Migration("20250902173921_InitialMigration")]
+    partial class InitialMigration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -108,7 +111,7 @@ namespace Resturant.Infrastructure.Migrations
                     b.Property<bool>("Paid")
                         .HasColumnType("boolean");
 
-                    b.Property<Guid>("ShoppingCartIdentity")
+                    b.Property<Guid>("TempCartsIdentity")
                         .HasColumnType("uuid");
 
                     b.Property<string>("UserName")
@@ -211,7 +214,7 @@ namespace Resturant.Infrastructure.Migrations
                         new
                         {
                             Id = 1,
-                            Created = new DateTime(2025, 9, 3, 16, 14, 25, 343, DateTimeKind.Utc).AddTicks(960),
+                            Created = new DateTime(2025, 9, 2, 17, 39, 21, 495, DateTimeKind.Utc).AddTicks(1770),
                             Identity = new Guid("3fa85f64-5717-4562-b3fc-2c963f66afa6"),
                             TotalPrice = 0m
                         });

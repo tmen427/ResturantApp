@@ -25,10 +25,10 @@ namespace API.Controllers
         }
 
         [HttpGet("GetAllOrders")]
-        public async Task<ActionResult<IEnumerable<CustomerInformation>>> GetAllOrders()
+        public async Task<ActionResult<IEnumerable<CustomerPaymentInformation>>> GetAllOrders()
         {
             //use a dto to get menu items also 
-            var orders = await _context.CustomerInformation.ToListAsync();
+            var orders = await _context.CustomerPaymentInformation.ToListAsync();
             
             if (orders.Any())
             {
@@ -38,11 +38,6 @@ namespace API.Controllers
         }
 
 
-        public class CustomerInformationdto 
-        {
-            public int Id { get; set; }
-            public string Name { get; set; }
-        }
         
         public class ViewsDto
         {
@@ -57,13 +52,13 @@ namespace API.Controllers
         public async Task<ActionResult<ViewsDto>> GetAllOrdersWith([FromQuery] string orderGuid = "3fa85f64-5717-4562-b3fc-2c963f66afa6")
         {
             //possibly use group by 
-                var orderList = await _context.CustomerInformation.ToListAsync();
+                var orderList = await _context.CustomerPaymentInformation.ToListAsync();
                 var tempList = await _context.ShoppingCartItems.Include("MenuItems").ToListAsync();
                 
               
             //join to the two tables above 
                 var joining = from x in orderList
-                    join temp in tempList on x.TempCartsIdentity equals temp.Identity
+                    join temp in tempList on x.ShoppingCartIdentity equals temp.Identity
                     select new ViewsDto() { Name = x.UserName, OrderId = temp.Identity,  Menus  = temp.MenuItems, };
 
 
@@ -100,14 +95,14 @@ namespace API.Controllers
 
 
         [HttpPost("PaymentInformation")]
-        public async Task<ActionResult<CustomerInformation>> PostOrderInformation(
+        public async Task<ActionResult<CustomerPaymentInformation>> PostOrderInformation(
             CustomerInformationDTO customerInformationDto)
         {
 
             //we assume all the guids are unique
-            var orders = await _context.CustomerInformation.FirstOrDefaultAsync(x =>
-                x.TempCartsIdentity.ToString() == customerInformationDto.CartsIdentity);
-
+            var orders = await _context.CustomerPaymentInformation.FirstOrDefaultAsync(x =>
+                x.ShoppingCartIdentity.ToString() == customerInformationDto.CartsIdentity);
+            
             if (orders != null)
             {
                 return BadRequest("Another pre-existing user has that guid");
@@ -122,10 +117,9 @@ namespace API.Controllers
             var checkingShoppingCart = await _context.ShoppingCartItems.FirstOrDefaultAsync(x=> x.Identity.ToString() == customerInformationDto.CartsIdentity);
             
             
-            
             if (convertGuid && checkingShoppingCart!= null)
             {
-                CustomerInformation customer = new CustomerInformation()
+                CustomerPaymentInformation customerPayment = new CustomerPaymentInformation()
                 {
                     Credit = customerInformationDto.Credit,
                     NameonCard = customerInformationDto.NameonCard,
@@ -133,14 +127,14 @@ namespace API.Controllers
                     Expiration = customerInformationDto.Expiration,
                     CVV = customerInformationDto.CVV,
                     UserName = customerInformationDto.UserName,
-                    TempCartsIdentity = tempGuid,
+                    ShoppingCartIdentity = tempGuid,
                     Paid = true
                 };
 
-                await _context.CustomerInformation.AddAsync(customer);
+                await _context.CustomerPaymentInformation.AddAsync(customerPayment);
                 await _context.SaveChangesAsync();
 
-                return Ok(customer);
+                return Ok(customerPayment);
             }
 
             return BadRequest("Invalid guid");

@@ -34,7 +34,7 @@ namespace Resturant.Infrastructure.Context
 
       //  private readonly IMediator _mediator;
 
-        public DbSet<CustomerInformation> CustomerInformation { get; set; }
+        public DbSet<CustomerPaymentInformation> CustomerPaymentInformation { get; set; }
         
         //   public DbSet<DomainEvent> DomainEvents { get; set; }    
         public DbSet<Event> Events { get; set; } 

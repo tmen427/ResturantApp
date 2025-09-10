@@ -1,6 +1,6 @@
 ﻿namespace Resturant.Domain.Entity
 {
-    public class CustomerInformation
+    public class CustomerPaymentInformation
     {
         public int Id { get; set; }
         public string? Credit { get; set; }
@@ -11,7 +11,9 @@
         public string? UserName { get; set; }
         
         public bool Paid { get; set; } = false;
-        public Guid TempCartsIdentity { get; set; }
+       // public Guid TempCartsIdentity { get; set; }
+        
+        public Guid ShoppingCartIdentity { get; set; }
         
     }
 }
