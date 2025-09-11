@@ -6,21 +6,25 @@ using Resturant.Domain.Entity;
 using Resturant.Domain.DomainEvents;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using MediatR;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Resturant.Application.DomainEventHandler;
 using Resturant.Domain.EventSourcing;
 using Resturant.Infrastructure.SeedData;
+using Microsoft.AspNetCore.Identity;
 
 
 namespace Resturant.Infrastructure.Context
 {
-    public class RestaurantContext : DbContext
+    public class RestaurantContext : IdentityDbContext<WebUser>
     {
         // public ToDoContext(DbContextOptions<ToDoContext> options, IMediator mediator) : base(options)
         // {
         //     _mediator = mediator ?? throw new ArgumentNullException("nonononon" + nameof(mediator));
         //  //   _mediator = mediator; 
         // }
+        
+   
         
         public RestaurantContext(DbContextOptions<RestaurantContext> options) : base(options)
         {
@@ -42,6 +46,8 @@ namespace Resturant.Infrastructure.Context
         public DbSet<MenuItems> MenuItems { get; set; }
         public DbSet<CustomerInquiryInformation> CustomerInquiryInformation { get; set; }
         public DbSet<BookingInformation> BookingInformation { get; set; }
+        
+     //   public DbSet<WebUser> WebUser { get; set; }
         
         
         // public override async Task<int> SaveChangesAsync(CancellationToken cancellation = default)
@@ -90,7 +96,7 @@ namespace Resturant.Infrastructure.Context
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-
+             base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<ShoppingCartItems>()
                 .HasMany(e => e.MenuItems)
@@ -98,7 +104,7 @@ namespace Resturant.Infrastructure.Context
                 .HasForeignKey(e => e.ShoppingCartItemsIdentity)
                 .HasPrincipalKey(e => e.Identity);
 
-
+     
              modelBuilder.ApplyConfiguration(new SeedShoppingCartItems()); 
              modelBuilder.ApplyConfiguration(new SeedMenuItems()); 
         }

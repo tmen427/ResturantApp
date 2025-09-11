@@ -21,6 +21,7 @@ using System.Reflection;
 using System.Text.Json.Serialization;
 
 using MediatR;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
@@ -54,7 +55,14 @@ builder.Services.AddRepositoryService();
 
 //use in memory database instead of sql database right now 
 //builder.Services.AddDbContext<ToDoContext>(options => options.UseSqlServer("name=WebApp2"));
-//
+
+builder.Services.AddAuthorization();
+
+
+
+builder.Services.AddIdentityApiEndpoints<WebUser>()
+    .AddEntityFrameworkStores<RestaurantContext>().AddApiEndpoints();
+
 builder.Services.AddDbContext<RestaurantContext>(options
       => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"), 
           optionsBuilder => optionsBuilder.MigrationsAssembly("Resturant.Infrastructure"))
@@ -135,6 +143,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 
+
+
 var app = builder.Build();
 
 
@@ -162,6 +172,7 @@ app.UseCors("AllowAllHeaders");
 //app.UseMiddleware<ExceptionHandlingMIddleware>();
 //app.UseHangfireDashboard(); 
 
+app.MapIdentityApi<WebUser>();
 
 app.Run();
 

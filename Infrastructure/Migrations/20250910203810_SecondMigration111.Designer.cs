@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Resturant.Infrastructure.Context;
@@ -11,9 +12,11 @@ using Resturant.Infrastructure.Context;
 namespace Resturant.Infrastructure.Migrations
 {
     [DbContext(typeof(RestaurantContext))]
-    partial class RestaurantContextModelSnapshot : ModelSnapshot
+    [Migration("20250910203810_SecondMigration111")]
+    partial class SecondMigration111
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -343,7 +346,7 @@ namespace Resturant.Infrastructure.Migrations
                         new
                         {
                             Id = 1,
-                            Created = new DateTime(2025, 9, 11, 0, 39, 12, 905, DateTimeKind.Utc).AddTicks(2650),
+                            Created = new DateTime(2025, 9, 10, 20, 38, 10, 85, DateTimeKind.Utc).AddTicks(9200),
                             Identity = new Guid("3fa85f64-5717-4562-b3fc-2c963f66afa6"),
                             TotalPrice = 0m
                         });
@@ -399,6 +402,9 @@ namespace Resturant.Infrastructure.Migrations
 
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("boolean");
+
+                    b.Property<string>("UniqueUserName")
+                        .HasColumnType("text");
 
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
