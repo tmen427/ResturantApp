@@ -61,7 +61,29 @@ builder.Services.AddAuthorization();
 
 
 builder.Services.AddIdentityApiEndpoints<WebUser>()
-    .AddEntityFrameworkStores<RestaurantContext>().AddApiEndpoints();
+    .AddEntityFrameworkStores<RestaurantContext>()
+    .AddApiEndpoints();
+
+builder.Services.Configure<IdentityOptions>(options =>
+{
+    // Password settings.
+    // options.Password.RequireDigit = true;
+    // options.Password.RequireLowercase = true;
+    // options.Password.RequireNonAlphanumeric = true;
+    // options.Password.RequireUppercase = true;
+    // options.Password.RequiredLength = 6;
+    // options.Password.RequiredUniqueChars = 1;
+    //
+    // // Lockout settings.
+    // options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+    // options.Lockout.MaxFailedAccessAttempts = 5;
+    // options.Lockout.AllowedForNewUsers = true;
+
+    // User settings.
+   // options.User.AllowedUserNameCharacters =
+     //   "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
+    options.User.RequireUniqueEmail = true;
+});
 
 builder.Services.AddDbContext<RestaurantContext>(options
       => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"), 
@@ -172,7 +194,7 @@ app.UseCors("AllowAllHeaders");
 //app.UseMiddleware<ExceptionHandlingMIddleware>();
 //app.UseHangfireDashboard(); 
 
-app.MapIdentityApi<WebUser>();
+//app.MapIdentityApi<WebUser>();
 
 app.Run();
 

@@ -37,13 +37,30 @@ namespace API.Controllers
         }
 
 
+        //change to dto
+        class ShoppingCartItemDTO
+        {
+            
+            public string SubTotal { get; set; }
+    
+            public string TaxAmount { get; set; }
+            public string TotalPrice { get; set; }
+        }
+        
+        
+        
         
         [HttpGet("GetTotalPrice")]
         public async Task<IActionResult> GetShoppingCartItemsByGuid(string guid = "3fa85f64-5717-4562-b3fc-2c963f66afa6")
         {
+            ShoppingCartItemDTO shoppingCartItemDTO = new ShoppingCartItemDTO();
             
            var shoppingCartItems = await _shoppingCartRepository.ReturnCartItemsByGuidAsync(guid);
-           return shoppingCartItems != null ?  Ok(shoppingCartItems) : NotFound();
+           shoppingCartItemDTO.SubTotal = shoppingCartItems!.SubTotal.ToString("0.00");
+           shoppingCartItemDTO.TaxAmount = shoppingCartItems!.TaxAmount.ToString("0.00");
+           shoppingCartItemDTO.TotalPrice = shoppingCartItems!.TotalPrice.ToString("0.00");
+       
+           return shoppingCartItems != null ?  Ok(shoppingCartItemDTO) : NotFound();
         }
         
         
@@ -108,10 +125,16 @@ namespace API.Controllers
             { 
                 _context.MenuItems.Remove(menuItem);
                 await _shoppingCartRepository.SaveCartItemsAsync();
-                //update total price
-                var totalPriceMenuItems = _shoppingCartRepository.TotalMenuPrice(guidId); 
+                //update subtotal
+                var subTotalMenuPrice = _shoppingCartRepository.SubTotalMenuPrice(guidId); 
+                
                 var shoppingCartItems = await _shoppingCartRepository.ReturnCartItemsByGuidAsync(guidId.ToString());
-                shoppingCartItems!.TotalPrice = totalPriceMenuItems;
+               
+                //update prices
+                shoppingCartItems!.SubTotal = subTotalMenuPrice;
+                shoppingCartItems.TaxAmount = shoppingCartItems.SubTotal * shoppingCartItems.TaxRate;
+                shoppingCartItems.TotalPrice = shoppingCartItems.SubTotal + shoppingCartItems.TaxAmount;
+                
                 await _context.SaveChangesAsync();
     
                 return Ok(); 
@@ -172,8 +195,13 @@ namespace API.Controllers
               await _shoppingCartRepository.SaveCartItemsAsync();
               
              //update totalprice
-               var totalPriceMenuItems = _shoppingCartRepository.TotalMenuPrice(dto.GuidId);
-                shoppingCartItems.TotalPrice = totalPriceMenuItems;
+               var totalPriceMenuItems = _shoppingCartRepository.SubTotalMenuPrice(dto.GuidId);
+                shoppingCartItems.SubTotal = totalPriceMenuItems;
+                shoppingCartItems.TaxAmount = shoppingCartItems.SubTotal * shoppingCartItems.TaxRate;
+                shoppingCartItems.TotalPrice = shoppingCartItems.SubTotal + shoppingCartItems.TaxAmount;
+                
+                
+                
                await _shoppingCartRepository.SaveCartItemsAsync();
               
              //  return CreatedAtAction("TemporaryCartItemByGuid", new {dto.Name}, new {Name = name, Price = price});

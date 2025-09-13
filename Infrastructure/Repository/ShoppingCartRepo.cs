@@ -65,7 +65,7 @@ public class ShoppingCartRepo : IRepository
     }
     
     
-    public decimal TotalMenuPrice(Guid menuGuid)
+    public decimal SubTotalMenuPrice(Guid menuGuid)
     {
         
        return _context.ShoppingCartItems.Include("MenuItems").

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Immutable;
 using Hangfire.Dashboard;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Restuarant.Application.DTOConversions;
 using Resturant.Infrastructure.Context;
@@ -23,7 +24,8 @@ namespace API.Controllers
             _context = context ?? throw new ArgumentNullException(nameof(context)); 
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
-
+        
+ 
         [HttpGet("GetAllOrders")]
         public async Task<ActionResult<IEnumerable<CustomerPaymentInformation>>> GetAllOrders()
         {

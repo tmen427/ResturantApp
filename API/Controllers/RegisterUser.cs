@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -31,9 +33,35 @@ public class RegisterUser : Controller
         public string? Password { get; set; }
     }
 
+    // [HttpGet("CheckUserLogin")]
+    // public bool IsUserCurrentlySignedIn(IdentityUser user)
+    // {
+    //     // This method can be used to check if a specific user is currently signed in
+    //     // (e.g., if you have their IdentityUser object)
+    //   //  return _signInManager.IsSignedIn(user);
+    // }
+
+    [HttpPost("SignOut")]
+    public async Task<IActionResult> SignOut()
+    {
+        await _signInManager.SignOutAsync();
+        return Ok(); 
+
+    }
+
+    [HttpPost("Login")]
+    public async Task<IActionResult> SignIn(string Username, string Password)
+    {
+        var result = await _signInManager.PasswordSignInAsync(Username,
+            Password, true, lockoutOnFailure: false);
+        
+        return Ok(result);
+    }
+
+    
 
 
-    [HttpPost("createuser")]
+    [HttpPost("CreateUser")]
     public async Task<IActionResult> CreateUser([FromBody] WebUserDTO userDTO)
     {
         //convert here 
@@ -53,7 +81,7 @@ public class RegisterUser : Controller
          if (result.Succeeded)
          {
              await _signInManager.SignInAsync(user, true);
-             return Ok(); 
+             return Ok(userDTO); 
          }
          
          foreach (var error in result.Errors)
@@ -74,21 +102,28 @@ public class RegisterUser : Controller
         var results =  await _userManager.FindByEmailAsync(email);
         if (results == null)
         {
-
             return false; 
         }
-        else
-        {  
-            var emailresult = results?.Email;
+           // var emailresult = results?.Email;
             return true; 
-        }
+    
     }
 
-    [HttpGet("ReturnAll")]
+    [HttpGet("ReturnAllUsers")]
     public async Task<IActionResult> GetAllUsers()
-    {
+    {  
+        await _userManager.GetUserAsync(HttpContext.User);
         var user =  await _userManager.Users.ToListAsync();
         return Ok(user); 
+    }
+
+    
+   // [Authorize]
+    [HttpGet("GetTheCurrentUser")]
+    public async Task<IActionResult> GetTheCurrentUser()
+    {
+      var user = await _userManager.GetUserAsync(HttpContext.User);
+      return Ok(user);
     }
 
 }

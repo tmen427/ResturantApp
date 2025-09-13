@@ -18,7 +18,7 @@ namespace Resturant.Domain.SeedWork
 
         Task AddShoppingCartItem(ShoppingCartItems shoppingCartItem);
 
-        decimal TotalMenuPrice(Guid menuGuid);
+        decimal SubTotalMenuPrice(Guid menuGuid);
 
 
     }
