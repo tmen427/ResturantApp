@@ -19,7 +19,7 @@ namespace Restuarant.Application.DTOConversions
                 CreditCardNumber = dto.CreditCardNumber,
                 Expiration = dto.Expiration,
                 CVV = dto.CVV,
-                UserName = dto.UserName
+                UserProfileName = dto.UserName
             };
         }
 

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Resturant.Infrastructure.Context;
@@ -11,9 +12,11 @@ using Resturant.Infrastructure.Context;
 namespace Resturant.Infrastructure.Migrations
 {
     [DbContext(typeof(RestaurantContext))]
-    partial class RestaurantContextModelSnapshot : ModelSnapshot
+    [Migration("20250923174525_Thirdsss")]
+    partial class Thirdsss
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -243,6 +246,9 @@ namespace Resturant.Infrastructure.Migrations
                     b.Property<Guid>("ShoppingCartIdentity")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("UserName")
+                        .HasColumnType("text");
+
                     b.Property<string>("UserProfileName")
                         .HasColumnType("text");
 
@@ -352,44 +358,13 @@ namespace Resturant.Infrastructure.Migrations
                         new
                         {
                             Id = 1,
-                            Created = new DateTime(2025, 9, 23, 18, 10, 30, 734, DateTimeKind.Utc).AddTicks(5270),
+                            Created = new DateTime(2025, 9, 23, 17, 45, 25, 10, DateTimeKind.Utc).AddTicks(4710),
                             Identity = new Guid("3fa85f64-5717-4562-b3fc-2c963f66afa6"),
                             SubTotal = 0m,
                             TaxAmount = 0m,
                             TaxRate = 0.06875m,
                             TotalPrice = 0m
                         });
-                });
-
-            modelBuilder.Entity("Resturant.Domain.Entity.UserPaymentInformation", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("CVV")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Credit")
-                        .HasColumnType("text");
-
-                    b.Property<string>("CreditCardNumber")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Expiration")
-                        .HasColumnType("text");
-
-                    b.Property<string>("NameonCard")
-                        .HasColumnType("text");
-
-                    b.Property<string>("UserProfileName")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("UserPaymentInformation");
                 });
 
             modelBuilder.Entity("Resturant.Domain.Entity.WebUser", b =>

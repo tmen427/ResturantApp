@@ -61,7 +61,7 @@ namespace API.Controllers
             //join to the two tables above 
                 var joining = from x in orderList
                     join temp in tempList on x.ShoppingCartIdentity equals temp.Identity
-                    select new ViewsDto() { Name = x.UserName, OrderId = temp.Identity,  Menus  = temp.MenuItems, };
+                    select new ViewsDto() { Name = x.UserProfileName, OrderId = temp.Identity,  Menus  = temp.MenuItems, };
 
 
                var finalValue =  
@@ -128,7 +128,7 @@ namespace API.Controllers
                     CreditCardNumber = customerInformationDto.CreditCardNumber,
                     Expiration = customerInformationDto.Expiration,
                     CVV = customerInformationDto.CVV,
-                    UserName = customerInformationDto.UserName,
+                    UserProfileName = customerInformationDto.UserName,
                     ShoppingCartIdentity = tempGuid,
                     Paid = true
                 };

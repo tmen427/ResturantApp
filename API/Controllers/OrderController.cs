@@ -42,7 +42,6 @@ namespace API.Controllers
         {
             
             public string SubTotal { get; set; }
-    
             public string TaxAmount { get; set; }
             public string TotalPrice { get; set; }
         }
@@ -93,8 +92,9 @@ namespace API.Controllers
                  .Select(x => new MenuDTO()
                      { Id = x.Id, Name = x.Name, Price = x.Price})
                  .ToList();
-             
-             return menuDto.Any() ? Ok(menuDto) : NotFound();
+             _logger.LogCritical("the value is " + menuDto.Count.ToString());
+           //  return menuDto.Any() ? Ok(menuDto) : NotFound("no value was found");
+             return Ok(menuDto);
          }
          
          [HttpGet("GetMenuItemByGuidSize")]
@@ -109,10 +109,10 @@ namespace API.Controllers
                  .ToList();
    
 
-             int menuDTOSize = menuDto.Count; 
-            
-             //may not want to return zero if nothing is found-but return Notfound(0) causes error on frontend
-             return menuDto.Any() ? Ok(menuDTOSize) : NotFound(0); 
+             int menuDTOSize = menuDto.Count;
+         //   _logger.LogCritical(menuDTOSize.ToString());
+    
+           return Ok(menuDTOSize);
          }
          
          

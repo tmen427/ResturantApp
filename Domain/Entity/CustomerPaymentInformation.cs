@@ -8,11 +8,14 @@
         public string? CreditCardNumber { get; set; }
         public string? Expiration { get; set; }
         public string? CVV { get; set; }
-        public string? UserName { get; set; }
         
         public bool Paid { get; set; } = false;
+        
+        public string?  UserProfileName { get; set; }
        // public Guid TempCartsIdentity { get; set; }
         
+       
+       
         public Guid ShoppingCartIdentity { get; set; }
         
     }

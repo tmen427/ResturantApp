@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Resturant.Domain.Entity;
+using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
 
 namespace API.Controllers;
 
@@ -45,17 +46,36 @@ public class RegisterUser : Controller
     public async Task<IActionResult> SignOut()
     {
         await _signInManager.SignOutAsync();
-        return Ok(); 
+        return Ok("user is signed out"); 
 
     }
 
-    [HttpPost("Login")]
-    public async Task<IActionResult> SignIn(string Username, string Password)
+
+
+    public class LoginDTO
     {
-        var result = await _signInManager.PasswordSignInAsync(Username,
-            Password, true, lockoutOnFailure: false);
+        public string? Email { get; set; }
+        public string? Password { get; set; }
+    }
+    
+    
+    [HttpPost("Login")]
+    public async Task<IActionResult> Login([FromBody] LoginDTO login)
+    {
+                    
+         var results = await _userManager.FindByEmailAsync(login.Email);
         
-        return Ok(result);
+        
+        var result = await _signInManager.PasswordSignInAsync(results.UserName,
+            login.Password!, true, lockoutOnFailure: false);
+
+      
+        _logger.LogCritical(HttpContext.User.Identity.IsAuthenticated.ToString());
+        if (result.Succeeded)
+        {
+              return Ok(result);
+        }
+        return BadRequest(result);
     }
 
     
@@ -104,8 +124,7 @@ public class RegisterUser : Controller
         {
             return false; 
         }
-           // var emailresult = results?.Email;
-            return true; 
+        return true; 
     
     }
 
@@ -122,8 +141,50 @@ public class RegisterUser : Controller
     [HttpGet("GetTheCurrentUser")]
     public async Task<IActionResult> GetTheCurrentUser()
     {
+           _logger.LogInformation(HttpContext.User.Identity.Name);
+        //    _logger.LogDebug( User.Identity.IsAuthenticated.ToString()); 
+        // //   _logger.LogInformation(HttpContext.User.ToString());
+        // //   _logger.LogCritical(HttpContext.User.ToString());
+        //    _logger.LogCritical(HttpContext.User.Identity.IsAuthenticated.ToString());
       var user = await _userManager.GetUserAsync(HttpContext.User);
-      return Ok(user);
+  
+      if (user != null)
+      {
+          return Ok(user);
+      }
+      return Unauthorized();
+      //return Ok(false); 
     }
 
+    // [Authorize]
+    [HttpGet("IsUserLoggedIn")]
+    public async Task<IActionResult> CheckIsUserLoggedIn()
+    {
+        _logger.LogInformation(HttpContext.User.Identity.Name);
+        //    _logger.LogDebug( User.Identity.IsAuthenticated.ToString()); 
+        // //   _logger.LogInformation(HttpContext.User.ToString());
+        // //   _logger.LogCritical(HttpContext.User.ToString());
+        //    _logger.LogCritical(HttpContext.User.Identity.IsAuthenticated.ToString());
+        var user = await _userManager.GetUserAsync(HttpContext.User);
+  
+        if (user != null)
+        {
+            return Ok(true);
+        }
+        return Unauthorized();
+        //return Ok(false); 
+    }
+
+    
+    
+    
+    [Authorize]
+    [HttpGet("user")]
+    public IActionResult GetUser()
+    {
+        _logger.LogInformation("User is authenticated");
+        return Ok("youur logged in bro ");
+    }
+    
+    
 }

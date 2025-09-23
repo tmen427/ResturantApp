@@ -47,6 +47,8 @@ namespace Resturant.Infrastructure.Context
         public DbSet<CustomerInquiryInformation> CustomerInquiryInformation { get; set; }
         public DbSet<BookingInformation> BookingInformation { get; set; }
         
+        public DbSet<UserPaymentInformation> UserPaymentInformation { get; set; }
+        
      //   public DbSet<WebUser> WebUser { get; set; }
         
         

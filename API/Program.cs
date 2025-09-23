@@ -56,6 +56,14 @@ builder.Services.AddRepositoryService();
 //use in memory database instead of sql database right now 
 //builder.Services.AddDbContext<ToDoContext>(options => options.UseSqlServer("name=WebApp2"));
 
+builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+        // ... other options
+    })
+    .AddCookie();
+
+
 builder.Services.AddAuthorization();
 
 
@@ -123,21 +131,42 @@ builder.Services.AddSwaggerGen(opt =>
     opt.SwaggerDoc("v1", new OpenApiInfo { Title = "MyResturantAPI", Version = "v1" });
 });
 
-
-
+// In Program.cs
+var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAllHeaders", policy =>
-    {
-        // builder.WithOrigins("http://localhost:4200").
-        //AllowAnyMethod().
-        //AllowCredentials().
-        //AllowAnyHeader();
-        // allow all origins to work
-        policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
-    });
+    options.AddPolicy(name: MyAllowSpecificOrigins,
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:4200") // The URL of your front-end
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials(); // IMPORTANT for cookies
+        });
 });
+
+// Add the CORS middleware
+//app.UseCors(MyAllowSpecificOrigins);
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Cookie.SameSite = SameSiteMode.None;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always; // Must be set to always with SameSite = None
+});
+
+
+// builder.Services.AddCors(options =>
+// {
+//     options.AddPolicy("AllowAllHeaders", policy =>
+//     {
+//          builder.WithOrigins("http://localhost:4200").
+//         //AllowAnyMethod().
+//         //AllowCredentials().
+//         //AllowAnyHeader();
+//         // allow all origins to work
+//         policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+//     });
+// });
 
 //var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 //builder.Services.AddCors(options =>
@@ -184,16 +213,16 @@ if (app.Environment.IsDevelopment())
 
 //app.UseHttpsRedirection();
 
-app.UseAuthentication();
-app.UseAuthorization();
+
 app.MapControllers();
 //app.UseCors(MyAllowSpecificOrigins);
-
-app.UseCors("AllowAllHeaders");
+app.UseCors(MyAllowSpecificOrigins);
+//app.UseCors("AllowAllHeaders");
 
 //app.UseMiddleware<ExceptionHandlingMIddleware>();
 //app.UseHangfireDashboard(); 
-
+app.UseAuthentication();
+app.UseAuthorization();
 //app.MapIdentityApi<WebUser>();
 
 app.Run();
