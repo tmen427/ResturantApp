@@ -14,7 +14,7 @@
         public string?  UserProfileName { get; set; }
        // public Guid TempCartsIdentity { get; set; }
         
-       
+       public DateTime CheckoutTime { get; set; }
        
         public Guid ShoppingCartIdentity { get; set; }
         

@@ -4,7 +4,7 @@ using Resturant.Infrastructure.Context;
 
 namespace API.Controllers;
 
-
+[Route("api/[controller]")]
 [ApiController]
 public class MiscController : Controller
 {

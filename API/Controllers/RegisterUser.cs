@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Resturant.Domain.Entity;
 using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
 
@@ -117,9 +118,10 @@ public class RegisterUser : Controller
 
     
     [HttpGet("CheckDuplicateEmail")]
-    public async Task<bool> GetUser(string email)
+    public async Task<bool> GetUserEmail(string email)
     {
         var results =  await _userManager.FindByEmailAsync(email);
+     
         if (results == null)
         {
             return false; 
@@ -127,6 +129,23 @@ public class RegisterUser : Controller
         return true; 
     
     }
+
+    [HttpGet("FindByUser")]
+    public async Task<bool> GetUser(string username)
+    {
+        try
+        {
+            var user = await _userManager.FindByNameAsync(username);
+            string users = user.UserName;
+            return true; 
+        }
+        catch
+        {
+            return false; 
+        }
+    }
+    
+    
 
     [HttpGet("ReturnAllUsers")]
     public async Task<IActionResult> GetAllUsers()
@@ -141,7 +160,7 @@ public class RegisterUser : Controller
     [HttpGet("GetTheCurrentUser")]
     public async Task<IActionResult> GetTheCurrentUser()
     {
-           _logger.LogInformation(HttpContext.User.Identity.Name);
+           _logger.LogCritical(HttpContext.User.Identity.Name);
         //    _logger.LogDebug( User.Identity.IsAuthenticated.ToString()); 
         // //   _logger.LogInformation(HttpContext.User.ToString());
         // //   _logger.LogCritical(HttpContext.User.ToString());

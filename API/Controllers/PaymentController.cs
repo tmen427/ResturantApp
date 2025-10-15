@@ -130,6 +130,7 @@ namespace API.Controllers
                     CVV = customerInformationDto.CVV,
                     UserProfileName = customerInformationDto.UserName,
                     ShoppingCartIdentity = tempGuid,
+                    CheckoutTime = DateTime.UtcNow,
                     Paid = true
                 };
 

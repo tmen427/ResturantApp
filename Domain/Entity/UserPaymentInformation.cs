@@ -9,6 +9,8 @@ public class UserPaymentInformation
     public string? CreditCardNumber { get; set; }
     public string? Expiration { get; set; }
     public string? CVV { get; set; }
-    public string?  UserProfileName { get; set; }
+    public string?  UserName { get; set; }
+    
+
     
 }

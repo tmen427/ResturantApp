@@ -101,9 +101,9 @@ namespace API.Controllers
          public async Task<ActionResult<int>> ShoppingCartItemByGuidSize(
              [FromQuery] string guidId = "3fa85f64-5717-4562-b3fc-2c963f66afa6")
          {
-             Guid.TryParse(guidId, out var menudtoItem);
+             Guid.TryParse(guidId, out var menuGuidValue);
 
-             var menuDto = (await _shoppingCartRepository.ReturnMenuItemListByGuid(menudtoItem.ToString()))
+             var menuDto = (await _shoppingCartRepository.ReturnMenuItemListByGuid(menuGuidValue.ToString()))
                  .Select(x => new MenuDTO()
                      { Id = x.Id, Name = x.Name, Price = x.Price})
                  .ToList();
@@ -165,6 +165,7 @@ namespace API.Controllers
                
   
                    shoppingcartitems.Identity = dto.GuidId;
+                   //the dateTime of when the shopping cart was crated, not the datetime checking out 
                    shoppingcartitems.Created = DateTime.UtcNow;
                    shoppingcartitems.TotalPrice = initialprice;
                 //   shoppingcartitems.CustomerInformationId = null; 
