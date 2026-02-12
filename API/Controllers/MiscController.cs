@@ -41,5 +41,11 @@ public class MiscController : Controller
         return Ok(guid);
     }
 
+    [HttpGet("Test")]
+    public string Test()
+    {
+        return "Test";
+    }
+
     
 }

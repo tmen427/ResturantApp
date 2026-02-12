@@ -12,7 +12,8 @@ public class ShoppingCartRepo : IRepository
    
     public ShoppingCartRepo(RestaurantContext context)
     {
-        _context = context ?? throw new ArgumentNullException(nameof(context));
+        ArgumentException.ThrowIfNullOrEmpty(nameof(context));
+        _context = context; 
 
     }
     
@@ -53,9 +54,7 @@ public class ShoppingCartRepo : IRepository
             .SelectMany(x => x.MenuItems).ToListAsync();
         
         return shoppingCart;
-      //      .Select(x => new MenuDTO()
-        //        { Id = x.Id, Name = x.Name, Price = x.Price, GuidId = x.ShoppingCartItemsIdentity.ToString() })
-        //    .ToListAsync();
+  
   
     }
 

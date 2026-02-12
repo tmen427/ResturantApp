@@ -3,10 +3,12 @@ using Hangfire.Dashboard;
 using Hangfire.SqlServer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Resturant.Domain.Entity;
 using Resturant.Infrastructure.Context;
+using Resturant.Application.DTO;
 
 namespace API.Controllers;
 [Route("api/[controller]")]
@@ -16,42 +18,41 @@ public class UserInformationController : Controller
 {
     private readonly RestaurantContext _context;
     private readonly ILogger<UserInformationController> _logger;
+    private readonly UserManager<WebUser> _userManager;
 
-    public UserInformationController(RestaurantContext context, ILogger<UserInformationController> logger)
+    public UserInformationController(RestaurantContext context,  ILogger<UserInformationController> logger, UserManager<WebUser> userManager)
     {
         _context = context;
         _logger = logger;
-
+        _userManager = userManager;
     }
 
-
-    public class UserPaymentInformationDTO
-    {
- 
-        public string? CardType { get; set; }
-        public string? NameonCard { get; set; }
-        public string? CreditCardNumber { get; set; }
-        public string? Expiration { get; set; }
-        public string? CVV { get; set; }
-     //   public string?  UserProfileName { get; set; }
-    }
+    
     [Authorize]
     [HttpPost("AddUserPaymentInformation")]
-    public async Task<ActionResult> AddUserPaymentInformation(UserPaymentInformationDTO userPaymentInformationDTO)
+    public async Task<ActionResult> AddUserPaymentInformation(UserPaymentInformationDto userPaymentInformationdto)
     {
- 
-        UserPaymentInformation userpaymentinfo = new UserPaymentInformation();
-        userpaymentinfo.Credit = userPaymentInformationDTO.CardType;
-        userpaymentinfo.NameonCard = userPaymentInformationDTO.NameonCard;
-        userpaymentinfo.CreditCardNumber = userPaymentInformationDTO.CreditCardNumber;
-        userpaymentinfo.Expiration = userPaymentInformationDTO.Expiration;
-        userpaymentinfo.CVV = userPaymentInformationDTO.CVV;
-        userpaymentinfo.UserName = HttpContext.User.Identity.Name;
-   
-   
-        await _context.UserPaymentInformation.AddAsync(userpaymentinfo);
-        await _context.SaveChangesAsync();
-        return Ok(userpaymentinfo);
+        
+        var user = await _userManager.GetUserAsync(User);
+        if (user is not null)
+        {
+            _logger.LogInformation($"User {user.UserName} has logged in.");
+            _logger.LogInformation(HttpContext.User.Identity.Name);
+     
+            UserPaymentInformation userpaymentinfo = new UserPaymentInformation
+            {
+                Credit = userPaymentInformationdto.CardType,
+                NameonCard = userPaymentInformationdto.NameonCard,
+                CreditCardNumber = userPaymentInformationdto.CreditCardNumber,
+                Expiration = userPaymentInformationdto.Expiration,
+                CVV = userPaymentInformationdto.CVV,
+                UserName = user.UserName,
+            };
+            await _context.UserPaymentInformation.AddAsync(userpaymentinfo);
+            await _context.SaveChangesAsync();
+            return Ok(userpaymentinfo);
+        }
+        return BadRequest();
     }
     
     
@@ -97,8 +98,6 @@ public class UserInformationController : Controller
     }
     
     
-
-    
     //user mergemap on frontend if needed 
     [Authorize]
     [HttpGet("UserHistoryMenu")]
@@ -139,17 +138,7 @@ public class UserInformationController : Controller
         return Ok(combineall); 
 
     }
-    class UserPaymentMenuItemsClass 
-    {
-        public DateTime Date { get; set; }
-        public string Identity { get; set; }
-        public string UserProfileName { get; set; }
-        public MenuItemsBro MenuItems  {get; set;}
-        
-    }
     
-    
-
     class UserPaymentMenuItems
     {
         public DateTime Date { get; set; }
@@ -171,46 +160,31 @@ public class UserInformationController : Controller
     
     //find the specific userinfo then update
     [HttpPut("UpdateUserPaymentInformation")]
-    public async Task<IActionResult> UpdateUserPaymentInformation(UserPaymentInformationDTO userPaymentInformationDTO)
+    public async Task<IActionResult> UpdateUserPaymentInformation(UserPaymentInformationDto userPaymentInformationDTO)
     {
-     
-  
-        var user = HttpContext.User.Identity.Name; 
-        var userPaymentInformation =  await _context.UserPaymentInformation.OrderBy(x=>x.Id).FirstOrDefaultAsync(x=>x.UserName == user);
-        
-              _logger.LogInformation(userPaymentInformation.NameonCard);
-        
-        userPaymentInformation.Credit = userPaymentInformationDTO.CardType;
-        
-        userPaymentInformation.NameonCard = userPaymentInformationDTO.NameonCard;
-        userPaymentInformation.CreditCardNumber = userPaymentInformationDTO.CreditCardNumber;
-        userPaymentInformation.Expiration = userPaymentInformationDTO.Expiration;
-        userPaymentInformation.CVV = userPaymentInformationDTO.CVV;
-        
+
         try
         {
+            //the most secure way is to use userMananger 
+            var user = HttpContext.User.Identity.Name;
+            var userPaymentInformation = await _context.UserPaymentInformation.OrderBy(users => users.Id)
+                .FirstOrDefaultAsync(x => x.UserName == user);
+            _logger.LogInformation(userPaymentInformation.NameonCard);
+
+            userPaymentInformation.Credit = userPaymentInformationDTO.CardType;
+            userPaymentInformation.NameonCard = userPaymentInformationDTO.NameonCard;
+            userPaymentInformation.CreditCardNumber = userPaymentInformationDTO.CreditCardNumber;
+            userPaymentInformation.Expiration = userPaymentInformationDTO.Expiration;
+            userPaymentInformation.CVV = userPaymentInformationDTO.CVV;
+
+
             await _context.SaveChangesAsync();
-            _logger.LogInformation("SUCCESFULLLLLL");
+            return Ok(userPaymentInformation);
         }
-        catch (DbUpdateConcurrencyException) 
+        catch (Exception e)
         {
+
             return NotFound();
         }
-
-        
-        return Ok(userPaymentInformation);
-
     }
-
-    class UserHistoryDTO
-    {
-        public string UserName { get; set; }
-        public string OrderId { get; set; }
-            
-        public decimal TotalPrice { get; set; }
-        public string Date { get; set; }
-    }
-    
-    
-    
 }

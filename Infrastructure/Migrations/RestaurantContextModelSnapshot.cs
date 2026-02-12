@@ -355,7 +355,7 @@ namespace Resturant.Infrastructure.Migrations
                         new
                         {
                             Id = 1,
-                            Created = new DateTime(2025, 10, 4, 23, 55, 19, 923, DateTimeKind.Utc).AddTicks(8340),
+                            Created = new DateTime(2025, 10, 15, 23, 29, 24, 985, DateTimeKind.Utc).AddTicks(4960),
                             Identity = new Guid("3fa85f64-5717-4562-b3fc-2c963f66afa6"),
                             SubTotal = 0m,
                             TaxAmount = 0m,

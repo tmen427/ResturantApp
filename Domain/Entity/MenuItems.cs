@@ -7,14 +7,10 @@ namespace Resturant.Domain.Entity;
 public class MenuItems
 {
     public int Id { get; set; }
-    public string Name { get; set; }
+    public string Name { get; set; } 
     public decimal Price { get;  set; }
-    
-    
     public Guid ShoppingCartItemsIdentity { get; set; }
-    
     public ShoppingCartItems? ShoppingCartItems { get; set; }
-    
     
     public decimal CheckMenuItemPrices(string itemName)
     {

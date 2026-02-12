@@ -12,8 +12,8 @@ using Resturant.Infrastructure.Context;
 namespace Resturant.Infrastructure.Migrations
 {
     [DbContext(typeof(RestaurantContext))]
-    [Migration("20251004235315_InitialMigration4")]
-    partial class InitialMigration4
+    [Migration("20251015232925_InitialMigration")]
+    partial class InitialMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -228,6 +228,9 @@ namespace Resturant.Infrastructure.Migrations
                     b.Property<string>("CVV")
                         .HasColumnType("text");
 
+                    b.Property<DateTime>("CheckoutTime")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Credit")
                         .HasColumnType("text");
 
@@ -355,7 +358,7 @@ namespace Resturant.Infrastructure.Migrations
                         new
                         {
                             Id = 1,
-                            Created = new DateTime(2025, 10, 4, 23, 53, 15, 244, DateTimeKind.Utc).AddTicks(570),
+                            Created = new DateTime(2025, 10, 15, 23, 29, 24, 985, DateTimeKind.Utc).AddTicks(4960),
                             Identity = new Guid("3fa85f64-5717-4562-b3fc-2c963f66afa6"),
                             SubTotal = 0m,
                             TaxAmount = 0m,
@@ -374,9 +377,6 @@ namespace Resturant.Infrastructure.Migrations
 
                     b.Property<string>("CVV")
                         .HasColumnType("text");
-
-                    b.Property<DateTime>("CheckoutTime")
-                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Credit")
                         .HasColumnType("text");

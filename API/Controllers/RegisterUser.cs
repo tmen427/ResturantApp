@@ -179,13 +179,21 @@ public class RegisterUser : Controller
     [HttpGet("IsUserLoggedIn")]
     public async Task<IActionResult> CheckIsUserLoggedIn()
     {
-        _logger.LogInformation(HttpContext.User.Identity.Name);
+        _logger.LogCritical("--------------------------------------------------------------");
+        _logger.LogCritical("from the httpcontext user identity");
+        _logger.LogCritical(HttpContext.User.Identity.Name);
         //    _logger.LogDebug( User.Identity.IsAuthenticated.ToString()); 
         // //   _logger.LogInformation(HttpContext.User.ToString());
         // //   _logger.LogCritical(HttpContext.User.ToString());
         //    _logger.LogCritical(HttpContext.User.Identity.IsAuthenticated.ToString());
+     //   _logger.LogCritical("from the controller" + HttpContext.User.ToString()); 
+
+
         var user = await _userManager.GetUserAsync(HttpContext.User);
   
+        _logger.LogCritical(user.Email);
+        
+        
         if (user != null)
         {
             return Ok(true);

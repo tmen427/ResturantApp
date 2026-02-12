@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Resturant.Domain.Entity;
 
 using System.ComponentModel;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Hosting;
 
 namespace Restuarant.Application.BackgrouondServices
@@ -15,6 +16,7 @@ namespace Restuarant.Application.BackgrouondServices
     {
         private readonly ILogger<DatabaseBackGround> _logger;
         private readonly IServiceProvider _serviceProvider;
+    
    
     
 

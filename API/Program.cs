@@ -139,7 +139,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy(name: MyAllowSpecificOrigins,
         policy =>
         {
-            policy.WithOrigins("http://localhost:4200") // The URL of your front-end
+            policy.WithOrigins("http://54.235.37.4", "http://localhost:4200") // The URL of your front-end
                 .AllowAnyHeader()
                 .AllowAnyMethod()
                 .AllowCredentials(); // IMPORTANT for cookies
@@ -150,9 +150,32 @@ builder.Services.AddCors(options =>
 //app.UseCors(MyAllowSpecificOrigins);
 builder.Services.ConfigureApplicationCookie(options =>
 {
+    // options.Cookie.Domain = "http://54.235.37.4"; // Set the domain for the authentication cookie
+    // options.Cookie.Path = "/"; // Ensure the cookie is accessible across the entire domain
+    // options.Cookie.HttpOnly = true; 
+    //this is needed if you want cookie to work in an http setting
+   // options.Cookie.HttpOnly = true; 
+    
     options.Cookie.SameSite = SameSiteMode.None;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always; // Must be set to always with SameSite = None
+
+    //this turns off https secure cookies
+   // options.Cookie.HttpOnly = true;
+   
+   //this always needs to be on for http.context.user.indetity to work 
+  options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+   //does not really work when using cookiesecurepolicy.none ---switch to https tommorow
+ //  options.Cookie.SecurePolicy = CookieSecurePolicy.None;
 });
+
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    // Add your Nginx IP or subnet to KnownProxies if Nginx is not directly exposed
+    // options.KnownProxies.Add(IPAddress.Parse("192.168.1.100")); 
+});
+
+// In Program.cs or Startup.cs Configure
+
 
 
 // builder.Services.AddCors(options =>
@@ -211,8 +234,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-//app.UseHttpsRedirection();
+//this is needed to convert http to https 
+app.UseHttpsRedirection();
 
+app.UseForwardedHeaders();
 
 app.MapControllers();
 //app.UseCors(MyAllowSpecificOrigins);
