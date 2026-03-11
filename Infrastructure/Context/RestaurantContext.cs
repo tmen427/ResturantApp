@@ -36,20 +36,24 @@ namespace Resturant.Infrastructure.Context
         {
         }
 
-      //  private readonly IMediator _mediator;
-
-        public DbSet<CustomerPaymentInformation> CustomerPaymentInformation { get; set; }
         
-        //   public DbSet<DomainEvent> DomainEvents { get; set; }    
+        public DbSet<CustomerPaymentInformation> CustomerPaymentInformation { get; set; }
+   
         public DbSet<Event> Events { get; set; } 
         public DbSet<ShoppingCartItems> ShoppingCartItems { get; set; }
-        public DbSet<MenuItems> MenuItems { get; set; }
+        public DbSet<MenuItem> MenuItems { get; set; }
         public DbSet<CustomerInquiryInformation> CustomerInquiryInformation { get; set; }
         public DbSet<BookingInformation> BookingInformation { get; set; }
         
         public DbSet<UserPaymentInformation> UserPaymentInformation { get; set; }
         
-     //   public DbSet<WebUser> WebUser { get; set; }
+        public DbSet<OrderItem> OrderItem { get; set; }
+        
+        public DbSet<OrderItemOptions> OrderItemOptions { get; set; }
+        
+        public DbSet<MenuItemOption> MenuItemOptions { get; set; }
+        
+
         
         
         // public override async Task<int> SaveChangesAsync(CancellationToken cancellation = default)
@@ -101,14 +105,17 @@ namespace Resturant.Infrastructure.Context
              base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<ShoppingCartItems>()
-                .HasMany(e => e.MenuItems)
+                .HasMany(e => e.OrderItems)
                 .WithOne(e => e.ShoppingCartItems)
                 .HasForeignKey(e => e.ShoppingCartItemsIdentity)
                 .HasPrincipalKey(e => e.Identity);
 
      
-             modelBuilder.ApplyConfiguration(new SeedShoppingCartItems()); 
+        //     modelBuilder.ApplyConfiguration(new SeedShoppingCartItems()); 
              modelBuilder.ApplyConfiguration(new SeedMenuItems()); 
+             modelBuilder.ApplyConfiguration(new SeedMenuItemOptions());
+                 
+                 
         }
         
     }

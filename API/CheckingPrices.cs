@@ -10,7 +10,7 @@ public static class CheckingPrices
                 return 14.95m;
             case "Papaya Salad":
                 return 8.95m;
-            case "Tofu":
+            case "Tofu Stir Fry":
                 return 12.95m;
             case "Caesar Salad":
                 return  8.95m;

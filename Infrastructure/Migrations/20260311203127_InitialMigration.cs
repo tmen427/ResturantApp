@@ -125,6 +125,36 @@ namespace Resturant.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "MenuItemOptions",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    MenuOptionName = table.Column<string>(type: "text", nullable: false),
+                    MenuOptionPrice = table.Column<decimal>(type: "numeric", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MenuItemOptions", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "MenuItems",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    MenuItemName = table.Column<string>(type: "text", nullable: false),
+                    MenuItemDescription = table.Column<string>(type: "text", nullable: false),
+                    MenuItemImageUrl = table.Column<string>(type: "text", nullable: false),
+                    MenuItemBasePrice = table.Column<decimal>(type: "numeric", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MenuItems", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "UserPaymentInformation",
                 columns: table => new
                 {
@@ -274,41 +304,73 @@ namespace Resturant.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "MenuItems",
+                name: "OrderItem",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "text", nullable: false),
-                    Price = table.Column<decimal>(type: "numeric", nullable: false),
+                    Quantity = table.Column<int>(type: "integer", nullable: false),
+                    TotalItemPrice = table.Column<decimal>(type: "numeric", nullable: false),
+                    Status = table.Column<string>(type: "text", nullable: true),
                     ShoppingCartItemsIdentity = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_MenuItems", x => x.Id);
+                    table.PrimaryKey("PK_OrderItem", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_MenuItems_ShoppingCartItems_ShoppingCartItemsIdentity",
+                        name: "FK_OrderItem_ShoppingCartItems_ShoppingCartItemsIdentity",
                         column: x => x.ShoppingCartItemsIdentity,
                         principalTable: "ShoppingCartItems",
                         principalColumn: "Identity",
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "OrderItemOptions",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Price = table.Column<decimal>(type: "numeric", nullable: false),
+                    OrderItemId = table.Column<int>(type: "integer", nullable: false),
+                    OrderId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_OrderItemOptions", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_OrderItemOptions_OrderItem_OrderItemId",
+                        column: x => x.OrderItemId,
+                        principalTable: "OrderItem",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.InsertData(
-                table: "ShoppingCartItems",
-                columns: new[] { "Id", "Created", "CustomerInformationId", "Identity", "SubTotal", "TaxAmount", "TaxRate", "TotalPrice" },
-                values: new object[] { 1, new DateTime(2025, 10, 15, 23, 29, 24, 985, DateTimeKind.Utc).AddTicks(4960), null, new Guid("3fa85f64-5717-4562-b3fc-2c963f66afa6"), 0m, 0m, 0.06875m, 0m });
+                table: "MenuItemOptions",
+                columns: new[] { "Id", "MenuOptionName", "MenuOptionPrice" },
+                values: new object[,]
+                {
+                    { 1, "Extra Chicken", 1m },
+                    { 2, "Extra Beef", 1m },
+                    { 3, "Extra Pork", 1m },
+                    { 4, "Extra Tofu", 1m },
+                    { 5, "Soy Sauce", 0.25m }
+                });
 
             migrationBuilder.InsertData(
                 table: "MenuItems",
-                columns: new[] { "Id", "Name", "Price", "ShoppingCartItemsIdentity" },
+                columns: new[] { "Id", "MenuItemBasePrice", "MenuItemDescription", "MenuItemImageUrl", "MenuItemName" },
                 values: new object[,]
                 {
-                    { 1, "Egg Roll Platter", 14.95m, new Guid("3fa85f64-5717-4562-b3fc-2c963f66afa6") },
-                    { 2, "Papaya Salad", 8.95m, new Guid("3fa85f64-5717-4562-b3fc-2c963f66afa6") },
-                    { 3, "Tofu", 10.5m, new Guid("3fa85f64-5717-4562-b3fc-2c963f66afa6") },
-                    { 4, "Chopped Beef", 12.95m, new Guid("3fa85f64-5717-4562-b3fc-2c963f66afa6") },
-                    { 5, "Veggie Platter", 8.95m, new Guid("3fa85f64-5717-4562-b3fc-2c963f66afa6") }
+                    { 1, 14.95m, "Carrots, Tomato, Lettuce", "EggRollPlatter.png", "Egg Roll Platter" },
+                    { 2, 8.95m, "Green Papaya, snake beans, cherry tomato", "PapayaSalad.png", "Papaya Salad" },
+                    { 3, 10.95m, "Tofu, bell peppers, green onion", "TofuStirFry.png", "Tofu Stir Fry" },
+                    { 4, 12.95m, "Mushrooms, Carrots, Okra", "ChoppedBeef.png", "Chopped Beef" },
+                    { 5, 9.95m, "Edamame, Carrots, Avocado", "VeggiePlatter.png", "Veggie Platter" },
+                    { 6, 10.5m, "Onion, lettuce, cheese", "CaesarSalad.png", "Caesar Salad" }
                 });
 
             migrationBuilder.CreateIndex(
@@ -349,9 +411,14 @@ namespace Resturant.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_MenuItems_ShoppingCartItemsIdentity",
-                table: "MenuItems",
+                name: "IX_OrderItem_ShoppingCartItemsIdentity",
+                table: "OrderItem",
                 column: "ShoppingCartItemsIdentity");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_OrderItemOptions_OrderItemId",
+                table: "OrderItemOptions",
+                column: "OrderItemId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ShoppingCartItems_CustomerInformationId",
@@ -387,7 +454,13 @@ namespace Resturant.Infrastructure.Migrations
                 name: "Events");
 
             migrationBuilder.DropTable(
+                name: "MenuItemOptions");
+
+            migrationBuilder.DropTable(
                 name: "MenuItems");
+
+            migrationBuilder.DropTable(
+                name: "OrderItemOptions");
 
             migrationBuilder.DropTable(
                 name: "UserPaymentInformation");
@@ -397,6 +470,9 @@ namespace Resturant.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
+
+            migrationBuilder.DropTable(
+                name: "OrderItem");
 
             migrationBuilder.DropTable(
                 name: "ShoppingCartItems");

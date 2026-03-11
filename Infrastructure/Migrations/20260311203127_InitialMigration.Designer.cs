@@ -12,7 +12,7 @@ using Resturant.Infrastructure.Context;
 namespace Resturant.Infrastructure.Migrations
 {
     [DbContext(typeof(RestaurantContext))]
-    [Migration("20251015232925_InitialMigration")]
+    [Migration("20260311203127_InitialMigration")]
     partial class InitialMigration
     {
         /// <inheritdoc />
@@ -257,7 +257,137 @@ namespace Resturant.Infrastructure.Migrations
                     b.ToTable("CustomerPaymentInformation");
                 });
 
-            modelBuilder.Entity("Resturant.Domain.Entity.MenuItems", b =>
+            modelBuilder.Entity("Resturant.Domain.Entity.MenuItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("MenuItemBasePrice")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("MenuItemDescription")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("MenuItemImageUrl")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("MenuItemName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("MenuItems");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            MenuItemBasePrice = 14.95m,
+                            MenuItemDescription = "Carrots, Tomato, Lettuce",
+                            MenuItemImageUrl = "EggRollPlatter.png",
+                            MenuItemName = "Egg Roll Platter"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            MenuItemBasePrice = 8.95m,
+                            MenuItemDescription = "Green Papaya, snake beans, cherry tomato",
+                            MenuItemImageUrl = "PapayaSalad.png",
+                            MenuItemName = "Papaya Salad"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            MenuItemBasePrice = 10.95m,
+                            MenuItemDescription = "Tofu, bell peppers, green onion",
+                            MenuItemImageUrl = "TofuStirFry.png",
+                            MenuItemName = "Tofu Stir Fry"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            MenuItemBasePrice = 12.95m,
+                            MenuItemDescription = "Mushrooms, Carrots, Okra",
+                            MenuItemImageUrl = "ChoppedBeef.png",
+                            MenuItemName = "Chopped Beef"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            MenuItemBasePrice = 9.95m,
+                            MenuItemDescription = "Edamame, Carrots, Avocado",
+                            MenuItemImageUrl = "VeggiePlatter.png",
+                            MenuItemName = "Veggie Platter"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            MenuItemBasePrice = 10.5m,
+                            MenuItemDescription = "Onion, lettuce, cheese",
+                            MenuItemImageUrl = "CaesarSalad.png",
+                            MenuItemName = "Caesar Salad"
+                        });
+                });
+
+            modelBuilder.Entity("Resturant.Domain.Entity.MenuItemOption", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("MenuOptionName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("MenuOptionPrice")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("MenuItemOptions");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            MenuOptionName = "Extra Chicken",
+                            MenuOptionPrice = 1m
+                        },
+                        new
+                        {
+                            Id = 2,
+                            MenuOptionName = "Extra Beef",
+                            MenuOptionPrice = 1m
+                        },
+                        new
+                        {
+                            Id = 3,
+                            MenuOptionName = "Extra Pork",
+                            MenuOptionPrice = 1m
+                        },
+                        new
+                        {
+                            Id = 4,
+                            MenuOptionName = "Extra Tofu",
+                            MenuOptionPrice = 1m
+                        },
+                        new
+                        {
+                            Id = 5,
+                            MenuOptionName = "Soy Sauce",
+                            MenuOptionPrice = 0.25m
+                        });
+                });
+
+            modelBuilder.Entity("Resturant.Domain.Entity.OrderItem", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -269,54 +399,51 @@ namespace Resturant.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<decimal>("Price")
-                        .HasColumnType("numeric");
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
 
                     b.Property<Guid>("ShoppingCartItemsIdentity")
                         .HasColumnType("uuid");
+
+                    b.Property<string>("Status")
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("TotalItemPrice")
+                        .HasColumnType("numeric");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ShoppingCartItemsIdentity");
 
-                    b.ToTable("MenuItems");
+                    b.ToTable("OrderItem");
+                });
 
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Name = "Egg Roll Platter",
-                            Price = 14.95m,
-                            ShoppingCartItemsIdentity = new Guid("3fa85f64-5717-4562-b3fc-2c963f66afa6")
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Name = "Papaya Salad",
-                            Price = 8.95m,
-                            ShoppingCartItemsIdentity = new Guid("3fa85f64-5717-4562-b3fc-2c963f66afa6")
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Name = "Tofu",
-                            Price = 10.5m,
-                            ShoppingCartItemsIdentity = new Guid("3fa85f64-5717-4562-b3fc-2c963f66afa6")
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Name = "Chopped Beef",
-                            Price = 12.95m,
-                            ShoppingCartItemsIdentity = new Guid("3fa85f64-5717-4562-b3fc-2c963f66afa6")
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Name = "Veggie Platter",
-                            Price = 8.95m,
-                            ShoppingCartItemsIdentity = new Guid("3fa85f64-5717-4562-b3fc-2c963f66afa6")
-                        });
+            modelBuilder.Entity("Resturant.Domain.Entity.OrderItemOptions", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("OrderItemId")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderItemId");
+
+                    b.ToTable("OrderItemOptions");
                 });
 
             modelBuilder.Entity("Resturant.Domain.Entity.ShoppingCartItems", b =>
@@ -353,18 +480,6 @@ namespace Resturant.Infrastructure.Migrations
                     b.HasIndex("CustomerInformationId");
 
                     b.ToTable("ShoppingCartItems");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Created = new DateTime(2025, 10, 15, 23, 29, 24, 985, DateTimeKind.Utc).AddTicks(4960),
-                            Identity = new Guid("3fa85f64-5717-4562-b3fc-2c963f66afa6"),
-                            SubTotal = 0m,
-                            TaxAmount = 0m,
-                            TaxRate = 0.06875m,
-                            TotalPrice = 0m
-                        });
                 });
 
             modelBuilder.Entity("Resturant.Domain.Entity.UserPaymentInformation", b =>
@@ -536,16 +651,27 @@ namespace Resturant.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Resturant.Domain.Entity.MenuItems", b =>
+            modelBuilder.Entity("Resturant.Domain.Entity.OrderItem", b =>
                 {
                     b.HasOne("Resturant.Domain.Entity.ShoppingCartItems", "ShoppingCartItems")
-                        .WithMany("MenuItems")
+                        .WithMany("OrderItems")
                         .HasForeignKey("ShoppingCartItemsIdentity")
                         .HasPrincipalKey("Identity")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("ShoppingCartItems");
+                });
+
+            modelBuilder.Entity("Resturant.Domain.Entity.OrderItemOptions", b =>
+                {
+                    b.HasOne("Resturant.Domain.Entity.OrderItem", "OrderItem")
+                        .WithMany("Options")
+                        .HasForeignKey("OrderItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("OrderItem");
                 });
 
             modelBuilder.Entity("Resturant.Domain.Entity.ShoppingCartItems", b =>
@@ -557,9 +683,14 @@ namespace Resturant.Infrastructure.Migrations
                     b.Navigation("CustomerInformation");
                 });
 
+            modelBuilder.Entity("Resturant.Domain.Entity.OrderItem", b =>
+                {
+                    b.Navigation("Options");
+                });
+
             modelBuilder.Entity("Resturant.Domain.Entity.ShoppingCartItems", b =>
                 {
-                    b.Navigation("MenuItems");
+                    b.Navigation("OrderItems");
                 });
 #pragma warning restore 612, 618
         }

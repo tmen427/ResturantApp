@@ -30,13 +30,6 @@ using Resturant.Infrastructure;
 
 
 var builder = WebApplication.CreateBuilder(args);
-//var builder = WebApplication.CreateSlimBuilder(args);
-
-builder.Services.Configure<ForwardedHeadersOptions>(options =>
-{
-    // options.KnownProxies.Add(IPAddress.Parse("34.224.64.48"));
-});
-
 
 builder.Services.AddControllers();
 
@@ -52,9 +45,6 @@ builder.Services.AddControllers()
 builder.Services.AddRepositoryService();
 
 //builder.Services.AddTransient<ExceptionHandlingMIddleware>();
-
-//use in memory database instead of sql database right now 
-//builder.Services.AddDbContext<ToDoContext>(options => options.UseSqlServer("name=WebApp2"));
 
 builder.Services.AddAuthentication(options =>
     {
@@ -118,8 +108,6 @@ builder.Services.AddAnotherService();
 //);
 //builder.Services.AddHangfireServer(); 
 
-
-
 //builder.Services.AddDbContext<ToDoContext>(opt =>
 //   opt.UseInMemoryDatabase("TodoList"));
 
@@ -174,34 +162,6 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
     // options.KnownProxies.Add(IPAddress.Parse("192.168.1.100")); 
 });
 
-// In Program.cs or Startup.cs Configure
-
-
-
-// builder.Services.AddCors(options =>
-// {
-//     options.AddPolicy("AllowAllHeaders", policy =>
-//     {
-//          builder.WithOrigins("http://localhost:4200").
-//         //AllowAnyMethod().
-//         //AllowCredentials().
-//         //AllowAnyHeader();
-//         // allow all origins to work
-//         policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
-//     });
-// });
-
-//var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
-//builder.Services.AddCors(options =>
-//{
-//    options.AddPolicy(name: MyAllowSpecificOrigins,
-//                      policy =>
-//                      {
-//                          policy.WithOrigins("http://localhost:4200")
-//                          .AllowAnyHeader().AllowAnyMethod(); 
-//                      });
-//});
-
 
 builder.Services.AddHttpContextAccessor();
 
@@ -212,11 +172,8 @@ builder.Services.AddHttpContextAccessor();
 //);
 
 
-
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
-
 
 
 var app = builder.Build();
@@ -256,29 +213,3 @@ app.Run();
 
 //add this for integration testing 
 public partial class Program { }
-
-//var builder = WebApplication.CreateBuilder(args);
-
-//// Add services to the container.
-
-//builder.Services.AddControllers();
-//// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-//builder.Services.AddEndpointsApiExplorer();
-//builder.Services.AddSwaggerGen();
-
-//var app = builder.Build();
-
-//// Configure the HTTP request pipeline.
-//if (app.Environment.IsDevelopment())
-//{
-//    app.UseSwagger();
-//    app.UseSwaggerUI();
-//}
-
-//app.UseHttpsRedirection();
-
-//app.UseAuthorization();
-
-//app.MapControllers();
-
-//app.Run();

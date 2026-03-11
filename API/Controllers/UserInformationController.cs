@@ -11,6 +11,7 @@ using Resturant.Infrastructure.Context;
 using Resturant.Application.DTO;
 
 namespace API.Controllers;
+
 [Route("api/[controller]")]
 [ApiController]
 
@@ -20,25 +21,25 @@ public class UserInformationController : Controller
     private readonly ILogger<UserInformationController> _logger;
     private readonly UserManager<WebUser> _userManager;
 
-    public UserInformationController(RestaurantContext context,  ILogger<UserInformationController> logger, UserManager<WebUser> userManager)
+    public UserInformationController(RestaurantContext context, ILogger<UserInformationController> logger,
+        UserManager<WebUser> userManager)
     {
         _context = context;
         _logger = logger;
         _userManager = userManager;
     }
 
-    
+
     [Authorize]
     [HttpPost("AddUserPaymentInformation")]
     public async Task<ActionResult> AddUserPaymentInformation(UserPaymentInformationDto userPaymentInformationdto)
     {
-        
+
         var user = await _userManager.GetUserAsync(User);
         if (user is not null)
         {
             _logger.LogInformation($"User {user.UserName} has logged in.");
-            _logger.LogInformation(HttpContext.User.Identity.Name);
-     
+            
             UserPaymentInformation userpaymentinfo = new UserPaymentInformation
             {
                 Credit = userPaymentInformationdto.CardType,
@@ -52,22 +53,26 @@ public class UserInformationController : Controller
             await _context.SaveChangesAsync();
             return Ok(userpaymentinfo);
         }
+
         return BadRequest();
     }
-    
-    
-    [Authorize]
+
+
+   [Authorize]
     [HttpGet("GetUserPaymentInformation")]
     public async Task<IActionResult> GetUserPaymentInformation()
     {
-        _logger.LogInformation("Getting the user information below.............");
-        //user names cannot be dupicate-if they are the follwing will NOT work
-        _logger.LogCritical(HttpContext.User.Identity.Name);
-
-        var user = HttpContext.User.Identity.Name; 
-       var userPaymentInformation =   await _context.UserPaymentInformation.OrderBy(x=>x.Id).FirstOrDefaultAsync(x=>x.UserName== user);
-     //   var userPaymentInformation =  await _context.UserPaymentInformation.FirstOrDefaultAsync(x=>x.UserName== user);
-        return Ok(userPaymentInformation);
+        var user = await _userManager.GetUserAsync(User);
+       // var user = HttpContext.User.Identity.Name;
+       if (user is not null)
+       {
+           var userPaymentInformation = await _context.UserPaymentInformation.OrderBy(x => x.Id)
+               .FirstOrDefaultAsync(x => x.UserName == user!.UserName);
+           return Ok(userPaymentInformation);
+       }
+      
+        return BadRequest();
+       
     }
 
     [Authorize]
@@ -75,79 +80,86 @@ public class UserInformationController : Controller
     public async Task<IActionResult> GetUserHistoryPayments()
     {
         var user = HttpContext?.User?.Identity?.Name;
-        
+
         //getting the payment information
         var User = await _context.CustomerPaymentInformation.Where(name => name.UserProfileName == user)
-                  .ToListAsync();
-     
+            .ToListAsync();
+
         //getting the actual car information
-               var shoppingCartItems = await _context.ShoppingCartItems.ToListAsync();
-                
-        
+        var shoppingCartItems = await _context.ShoppingCartItems.ToListAsync();
+
+
         // //join to the two tables above 
         var joining = from x in User
             join temp in shoppingCartItems on x.ShoppingCartIdentity equals temp.Identity
 
             //   select new UserHistoryDTO() { UserName =  x.UserProfileName, OrderId = temp.Identity.ToString(),  TotalPrice  = temp.TotalPrice, Date = temp.Created.ToString("d"), };
-            select new { TotalPrice = temp.TotalPrice, Date = temp.Created.ToString("d") }; 
+            select new { TotalPrice = temp.TotalPrice, Date = temp.Created.ToString("d") };
         //can do another join here if needed !!!!
         //joing based on guid ida...
 
-        var orderbydate = joining.OrderBy(x => x.Date).Take(5); 
-        return Ok(orderbydate); 
+        var orderbydate = joining.OrderBy(x => x.Date).Take(5);
+        return Ok(orderbydate);
     }
-    
-    
+
+
     //user mergemap on frontend if needed 
     [Authorize]
     [HttpGet("UserHistoryMenu")]
     public async Task<IActionResult> UserHistoryMenu()
     {
         var user = HttpContext?.User?.Identity?.Name;
-            
+
         //getting the payment information
         var User = await _context.CustomerPaymentInformation.Where(name => name.UserProfileName == user).Distinct()
             .ToListAsync();
-        
-        //get the guid, from user then jst query 
-        var MenuItems = await _context.MenuItems.ToListAsync();
-      //  var guidy = await _context.MenuItems.Where(x => x.ShoppingCartItems == Guids).ToListAsync();
 
-        
+        //get the guid, from user then jst query 
+        var MenuItems = await _context.OrderItem.ToListAsync();
+        //  var guidy = await _context.MenuItems.Where(x => x.ShoppingCartItems == Guids).ToListAsync();
+
+
         // //join to the two tables above 
         var joining =
             from customer in User
             join items in MenuItems on customer.ShoppingCartIdentity equals items.ShoppingCartItemsIdentity
             select new UserPaymentMenuItems()
             {
-                Date  = customer.CheckoutTime,
+                Date = customer.CheckoutTime,
                 Identity = customer.ShoppingCartIdentity.ToString(),
-                UserProfileName = customer.UserProfileName, 
-                MenuItems = new List<MenuItemsBro>() {new MenuItemsBro(){ Date = customer.CheckoutTime.ToString(), Identity = customer.ShoppingCartIdentity.ToString(), Name  = items.Name, Price = items.Price.ToString("0.00") }},
-             //  MenuItems = new(){ Identity = customer.ShoppingCartIdentity.ToString(), Name  = items.Name, Price = items.Price.ToString("0.00") }
+                UserProfileName = customer.UserProfileName,
+                MenuItems = new List<MenuItemsBro>()
+                {
+                    new MenuItemsBro()
+                    {
+                        Date = customer.CheckoutTime.ToString(), Identity = customer.ShoppingCartIdentity.ToString(),
+                        Name = items.Name, Price = items.TotalItemPrice.ToString("0.00")
+                    }
+                },
+
             };
-        
+
         //flattened the array
         //array within an array 
-        var combineall = joining.SelectMany(x => x.MenuItems); 
-           //.GroupBy((x => x.Identity));
+        var combineall = joining.SelectMany(x => x.MenuItems);
+        //.GroupBy((x => x.Identity));
 
         //foreach loop here 
-        
+
         //just make a list of items first 
-        return Ok(combineall); 
+        return Ok(combineall);
 
     }
-    
+
     class UserPaymentMenuItems
     {
         public DateTime Date { get; set; }
         public string Identity { get; set; }
         public string UserProfileName { get; set; }
-        public List<MenuItemsBro>  MenuItems  {get; set;}
-        
+        public List<MenuItemsBro> MenuItems { get; set; }
+
     }
-    
+
     public class MenuItemsBro
     {
         public string Date { get; set; }
@@ -155,36 +167,34 @@ public class UserInformationController : Controller
         public string Name { get; set; }
         public string Price { get; set; }
     }
+
+
     
-    
-    
-    //find the specific userinfo then update
     [HttpPut("UpdateUserPaymentInformation")]
-    public async Task<IActionResult> UpdateUserPaymentInformation(UserPaymentInformationDto userPaymentInformationDTO)
+    public async Task<IActionResult> UpdateUserPaymentInformation(UserPaymentInformationDto userPaymentInformationdto)
     {
+        var user = await _userManager.GetUserAsync(User);
 
-        try
+        if (user is not null)
         {
-            //the most secure way is to use userMananger 
-            var user = HttpContext.User.Identity.Name;
             var userPaymentInformation = await _context.UserPaymentInformation.OrderBy(users => users.Id)
-                .FirstOrDefaultAsync(x => x.UserName == user);
-            _logger.LogInformation(userPaymentInformation.NameonCard);
-
-            userPaymentInformation.Credit = userPaymentInformationDTO.CardType;
-            userPaymentInformation.NameonCard = userPaymentInformationDTO.NameonCard;
-            userPaymentInformation.CreditCardNumber = userPaymentInformationDTO.CreditCardNumber;
-            userPaymentInformation.Expiration = userPaymentInformationDTO.Expiration;
-            userPaymentInformation.CVV = userPaymentInformationDTO.CVV;
-
-
-            await _context.SaveChangesAsync();
-            return Ok(userPaymentInformation);
+                .FirstOrDefaultAsync(x => x.UserName == user.UserName);
+            if (userPaymentInformation is not null)
+            {
+                userPaymentInformation.Credit = userPaymentInformationdto.CardType;
+                userPaymentInformation.NameonCard = userPaymentInformationdto.NameonCard;
+                userPaymentInformation.CreditCardNumber = userPaymentInformationdto.CreditCardNumber;
+                userPaymentInformation.Expiration = userPaymentInformationdto.Expiration;
+                userPaymentInformation.CVV = userPaymentInformationdto.CVV;
+                
+                await _context.SaveChangesAsync();
+                return Ok(userPaymentInformation);
+            }
+            return BadRequest();
         }
-        catch (Exception e)
-        {
-
-            return NotFound();
-        }
+        return BadRequest();
     }
+
+
+
 }

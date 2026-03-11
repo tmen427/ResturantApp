@@ -1,12 +1,15 @@
 ﻿using System.Collections.Immutable;
 using Hangfire.Dashboard;
+using Hangfire.Logging.LogProviders;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Restuarant.Application.DTOConversions;
 using Resturant.Infrastructure.Context;
 using Resturant.Application.DTO;
 using Resturant.Domain.Entity;
 using Microsoft.EntityFrameworkCore;
+using MenuItem = Resturant.Domain.Entity.MenuItem;
 
 namespace API.Controllers
 {
@@ -45,7 +48,7 @@ namespace API.Controllers
         {
             public required string Name { get; set; } 
             public Guid OrderId { get; set; }
-            public required List<MenuItems>  Menus { get; set; }
+            public required List<MenuItem>  Menus { get; set; }
         }
         
         
@@ -59,23 +62,25 @@ namespace API.Controllers
                 
               
             //join to the two tables above 
-                var joining = from x in orderList
-                    join temp in tempList on x.ShoppingCartIdentity equals temp.Identity
-                    select new ViewsDto() { Name = x.UserProfileName, OrderId = temp.Identity,  Menus  = temp.MenuItems, };
+               //  var joining = from x in orderList
+               //      join temp in tempList on x.ShoppingCartIdentity equals temp.Identity
+               //      select new ViewsDto() { Name = x.UserProfileName, OrderId = temp.Identity,  Menus  = temp.UserItems, };
+               //
+               //
+               // var finalValue =  
+               //     from x in joining 
+               //     where x.OrderId.ToString() == orderGuid
+               //     select new { UserName = x.Name, Items = x.Menus.Select(p => p.Name + ", " + p.Price), GuidId = x.OrderId.ToString() }; 
+               //
+               //  
+               //  if (!finalValue.Any())
+               //  { 
+               //   return NotFound("The order does not exist or the order has not ben created yet");
+               //  }
+               //  return Ok(finalValue);
 
+               return Ok("completed for now");
 
-               var finalValue =  
-                   from x in joining 
-                   where x.OrderId.ToString() == orderGuid
-                   select new { UserName = x.Name, Items = x.Menus.Select(p => p.Name + ", " + p.Price), GuidId = x.OrderId.ToString() }; 
-               
-                
-                if (!finalValue.Any())
-                { 
-                 return NotFound("The order does not exist or the order has not ben created yet");
-                }
-                return Ok(finalValue);
-                
         }
         
         

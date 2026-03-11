@@ -14,6 +14,7 @@ using Newtonsoft.Json;
 using Resturant.Application.DTO;
 using Resturant.Domain.SeedWork;
 using Resturant.Infrastructure.Context;
+using MenuItem = Resturant.Domain.Entity.MenuItem;
 
 
 namespace API.Controllers
@@ -36,30 +37,21 @@ namespace API.Controllers
            _logger = logger;
         }
 
-
-        //change to dto
-        class ShoppingCartItemDTO
-        {
-            
-            public string SubTotal { get; set; }
-            public string TaxAmount { get; set; }
-            public string TotalPrice { get; set; }
-        }
-        
-        
-        
         
         [HttpGet("GetTotalPrice")]
-        public async Task<IActionResult> GetShoppingCartItemsByGuid(string guid = "3fa85f64-5717-4562-b3fc-2c963f66afa6")
-        {
-            ShoppingCartItemDTO shoppingCartItemDTO = new ShoppingCartItemDTO();
-            
-           var shoppingCartItems = await _shoppingCartRepository.ReturnCartItemsByGuidAsync(guid);
-           shoppingCartItemDTO.SubTotal = shoppingCartItems!.SubTotal.ToString("0.00");
-           shoppingCartItemDTO.TaxAmount = shoppingCartItems!.TaxAmount.ToString("0.00");
-           shoppingCartItemDTO.TotalPrice = shoppingCartItems!.TotalPrice.ToString("0.00");
+        public async Task<IActionResult> GetShoppingCartItemsByGuid(string guid)
+        { 
        
-           return shoppingCartItems != null ?  Ok(shoppingCartItemDTO) : NotFound();
+           ShoppingCartItems? shoppingCartItems = await _shoppingCartRepository.ReturnCartItemsByGuidAsync(guid);
+           
+           if(shoppingCartItems == null) return NotFound();
+           
+           ShoppingCartItemDTO shoppingcartItemDto = new ShoppingCartItemDTO();
+           shoppingcartItemDto.SubTotal = shoppingCartItems.SubTotal.ToString("0.00");
+           shoppingcartItemDto.TaxAmount = shoppingCartItems.TaxAmount.ToString("0.00");
+           shoppingcartItemDto.TotalPrice = shoppingCartItems.TotalPrice.ToString("0.00");
+           return Ok(shoppingcartItemDto);
+           
         }
         
         
@@ -67,7 +59,7 @@ namespace API.Controllers
          public async Task<ActionResult<IEnumerable<MenuDTO>>> ShoppingCartItems()
          {
              var menuDtos = (await _shoppingCartRepository.ReturnMenuItemsListAsync())
-                 .Select(x => new MenuDTO() { Id = x.Id, Name = x.Name, Price = x.Price});
+                 .Select(x => new MenuDTO() { Id = x.Id, Name = x.Name, Price = x.TotalItemPrice});
              return menuDtos.Any() ? Ok(menuDtos) : NotFound("no value was found");
          }
 
@@ -78,22 +70,13 @@ namespace API.Controllers
          {
              Guid.TryParse(guidId, out var guidIdValue);
              
-             // var shoppingCartItems = await _context.ShoppingCartItems.Include("MenuItems").Where(x => x.Identity == guidIdValue).SelectMany(x=>x.MenuItems).ToListAsync();
-             // var menus = shoppingCartItems.Select(x => new MenuDTO()
-             // {
-
-             //     Id = x.Id,
-             //     Name = x.Name,
-             //     Price = x.Price,
-             //     GuidId = x.ShoppingCartItemsIdentity.ToString()
-             // }).ToList(); 
-             //
-             var menuDto = (await _shoppingCartRepository.ReturnMenuItemListByGuid(guidId.ToString()))
-                 .Select(x => new MenuDTO()
-                     { Id = x.Id, Name = x.Name, Price = x.Price})
+             
+             
+             var menuDto = (await _shoppingCartRepository.ReturnMenuItemListByGuid(guidIdValue.ToString()))
+              //   .Select(x => new MenuDTO()
+                //     { Id = x.Id, Name = x.Name, Price = x.TotalItemPrice})
                  .ToList();
-             _logger.LogCritical("the value is " + menuDto.Count.ToString());
-           //  return menuDto.Any() ? Ok(menuDto) : NotFound("no value was found");
+
              return Ok(menuDto);
          }
          
@@ -105,13 +88,12 @@ namespace API.Controllers
 
              var menuDto = (await _shoppingCartRepository.ReturnMenuItemListByGuid(menuGuidValue.ToString()))
                  .Select(x => new MenuDTO()
-                     { Id = x.Id, Name = x.Name, Price = x.Price})
+                     { Id = x.Id, Name = x.Name, Price = x.TotalItemPrice})
                  .ToList();
    
 
              int menuDTOSize = menuDto.Count;
-         //   _logger.LogCritical(menuDTOSize.ToString());
-    
+             
            return Ok(menuDTOSize);
          }
          
@@ -123,11 +105,10 @@ namespace API.Controllers
             var menuItem = await _shoppingCartRepository.FindByPrimaryKey(id); 
             if (menuItem is not null)
             { 
-                _context.MenuItems.Remove(menuItem);
+                _context.OrderItem.Remove(menuItem);
                 await _shoppingCartRepository.SaveCartItemsAsync();
                 //update subtotal
                 var subTotalMenuPrice = _shoppingCartRepository.SubTotalMenuPrice(guidId); 
-                
                 var shoppingCartItems = await _shoppingCartRepository.ReturnCartItemsByGuidAsync(guidId.ToString());
                
                 //update prices
@@ -142,73 +123,157 @@ namespace API.Controllers
             return NotFound("No menu item was found");
             
          }
+
+         [HttpGet("GetMenuItems")]
+         public async Task<IActionResult> GetMenuItems()
+         {
+             return Ok(await _context.MenuItems.ToListAsync()); 
+         }
          
+         [HttpGet("GetMenuItemOptions")]
+         public async Task<IActionResult> GetMenuOptions()
+         {
+             return Ok(await _context.MenuItemOptions.ToListAsync()); 
+         }
          
          
          [HttpPost("ShoppingCartItems")]
-         public async Task<ActionResult<TempDto>> AddMenuItems(TempDto dto)
+         public async Task<ActionResult<OrderItemDto>> AddMenuItems(OrderItemDto orderItemDto)
          {
-             //possibly use single or default
-             var shoppingCartItems = await _shoppingCartRepository.ReturnCartItemsByGuidAsync(dto.GuidId.ToString());
-    
+             //TODO put taxrate in the menuItem domain model method
+             const decimal taxRate = 0.06875m;
+             decimal totalMenuItemOptionsPrice = 0m; 
+             ShoppingCartItems? shoppingCartItems = await _shoppingCartRepository.ReturnCartItemsByGuidAsync(orderItemDto.GuidId.ToString());
              
-        //     int? customerId = shoppingCartItems?.CustomerInformationId; 
-             
-             //create a new shopping cart 
+        
            if (shoppingCartItems is null)
            {
-               string name = dto.Name!;
-               decimal initialprice = CheckingPrices.CheckMenuItemPricesFromStatic(name);
+               var menuItem = await _context.MenuItems.SingleOrDefaultAsync(value => value.MenuItemName == orderItemDto.Name);
                
-               //make a new shopping cart
-               ShoppingCartItems shoppingcartitems = new ShoppingCartItems();
-               
-  
-                   shoppingcartitems.Identity = dto.GuidId;
-                   //the dateTime of when the shopping cart was crated, not the datetime checking out 
-                   shoppingcartitems.Created = DateTime.UtcNow;
-                   shoppingcartitems.TotalPrice = initialprice;
-                //   shoppingcartitems.CustomerInformationId = null; 
+                   var orderItem = new OrderItem(); 
+                   orderItem.Name = menuItem.MenuItemName!;
+                   orderItem.Status = "start";
+                   //put valiation elsewhere 
+                   if (orderItemDto.Quantity > 0)
+                   {
+                       orderItem.Quantity = orderItemDto.Quantity;
+                   }
+                   else
+                   {
+                       throw new Exception("value must be greater than 0");
+                   }
                    
-                   var menuItems = new MenuItems();
-                   menuItems.Name = name;
-                   menuItems.Price = menuItems.CheckMenuItemPrices(name);
-                   
-                   shoppingcartitems.MenuItems.Add(menuItems);
+             
+                   foreach (var menuitem in orderItemDto.Options)
+                   {
               
+                       MenuItemOption? menuItemOptions = new(); 
+                       menuItemOptions = await _context.MenuItemOptions.FirstOrDefaultAsync(value => value.MenuOptionName == menuitem!);
+                       
+                       if (menuItemOptions != null)
+                       {
+                           var orderItemOptions1 = new OrderItemOptions();
+
+                           orderItemOptions1.Name = menuItemOptions.MenuOptionName;
+                           orderItemOptions1.Price = menuItemOptions.MenuOptionPrice;
+
+                           orderItem.Options.Add(orderItemOptions1);
+
+                           totalMenuItemOptionsPrice += menuItemOptions.MenuOptionPrice;
+                           _logger.LogInformation("the total menuITem prices" + totalMenuItemOptionsPrice);
+                       }
+                    
+                   } 
+
+                   orderItem.TotalItemPrice = (menuItem!.MenuItemBasePrice + totalMenuItemOptionsPrice) * orderItemDto.Quantity;
+                  
+                   //TODO put this calculation elsewhere
+                   var shoppingcartitems = new ShoppingCartItems();
+                   shoppingcartitems.Identity = orderItemDto.GuidId;
+                   shoppingcartitems.Created = DateTime.UtcNow;
+                   shoppingcartitems.SubTotal = orderItem.TotalItemPrice; 
+                   shoppingcartitems.TaxAmount = orderItem.TotalItemPrice * taxRate;
+                   shoppingcartitems.TotalPrice = orderItem.TotalItemPrice + shoppingcartitems.TaxAmount;
                    
-               await _shoppingCartRepository.AddShoppingCartItem(shoppingcartitems);
-               await _shoppingCartRepository.SaveCartItemsAsync();
-              // return CreatedAtAction("TemporaryCartItemByGuid", new {dto.GuidId}, temporaryCartItems);
-              return Ok(new { Name = name, Price = initialprice });
+                   shoppingcartitems.OrderItems.Add(orderItem);
+                   await _shoppingCartRepository.AddShoppingCartItem(shoppingcartitems);
+                   await _shoppingCartRepository.SaveCartItemsAsync();
+                   return Ok(new { Name = orderItemDto.Name!, Price = menuItem.MenuItemBasePrice });
       
            }
-           //add new menu items to the shopping cart
+           //continue to add items to existing shopping cart
            else
            {
-               string name = dto.Name!;
+               string name = orderItemDto.Name!;
+
+               var menuItem = await _context.MenuItems.FirstOrDefaultAsync(value => value.MenuItemName == orderItemDto.Name); 
+     
+               var orderItem = new OrderItem();
+               orderItem.Name = name;
+               orderItem.Status = "start";
+               orderItem.TotalItemPrice = menuItem!.MenuItemBasePrice;
+               if (orderItemDto.Quantity > 0)
+               {
+                   orderItem.Quantity = orderItemDto.Quantity;
+               }
+               else
+               {
+                   throw new Exception("value must be greater than 0");
+               }
                
-               var menuItems = new MenuItems();
-               menuItems.Name = name;
-               menuItems.Price = menuItems.CheckMenuItemPrices(name); 
+   
+               //if there is a valid menu options 
+               foreach (var x in orderItemDto.Options)
+               {
+                   var menuItemOptions = await _context.MenuItemOptions.FirstOrDefaultAsync(value => value.MenuOptionName == x!);
+
+                   if (menuItemOptions != null)
+                   {
+                       var orderItemOptions1 = new OrderItemOptions(); // create new object each loop
+
+                       orderItemOptions1.Name = menuItemOptions.MenuOptionName;
+                       orderItemOptions1.Price = menuItemOptions.MenuOptionPrice;
+
+                       orderItem.Options.Add(orderItemOptions1);
+
+                       totalMenuItemOptionsPrice += menuItemOptions.MenuOptionPrice;
+                       _logger.LogCritical(totalMenuItemOptionsPrice.ToString());
+                   }
+                   
+               } 
                
-               shoppingCartItems.MenuItems.Add(menuItems);
-              await _shoppingCartRepository.SaveCartItemsAsync();
-              
-             //update totalprice
-               var totalPriceMenuItems = _shoppingCartRepository.SubTotalMenuPrice(dto.GuidId);
-                shoppingCartItems.SubTotal = totalPriceMenuItems;
-                shoppingCartItems.TaxAmount = shoppingCartItems.SubTotal * shoppingCartItems.TaxRate;
-                shoppingCartItems.TotalPrice = shoppingCartItems.SubTotal + shoppingCartItems.TaxAmount;
-                
-                
-                
-               await _shoppingCartRepository.SaveCartItemsAsync();
-              
-             //  return CreatedAtAction("TemporaryCartItemByGuid", new {dto.Name}, new {Name = name, Price = price});
-             return Ok(new { Name = name, Price = menuItems.Price });
+               orderItem.TotalItemPrice = (menuItem!.MenuItemBasePrice + totalMenuItemOptionsPrice) * orderItemDto.Quantity;
+               
+               shoppingCartItems.OrderItems.Add(orderItem);
+               
+               await CalculateTotalAmountShoppingCart(orderItem.TotalItemPrice); 
+               
+               async Task CalculateTotalAmountShoppingCart(decimal newItemTotalPrice)
+               {     
+                   
+                   var currentTotalMenuPrice = _shoppingCartRepository.SubTotalMenuPrice(orderItemDto.GuidId);
+                   _logger.LogCritical($"Current total menu price: {currentTotalMenuPrice}");
+                   var totalmenuprice = currentTotalMenuPrice + newItemTotalPrice;
+               
+                   shoppingCartItems.SubTotal = totalmenuprice; 
+                   shoppingCartItems.TaxAmount =  totalmenuprice * shoppingCartItems.TaxRate;
+                   shoppingCartItems.TotalPrice = totalmenuprice + shoppingCartItems.TaxAmount;
+                   await _shoppingCartRepository.SaveCartItemsAsync();
+               }
+               
+             return Ok(new { Name = name, Price =  orderItem.TotalItemPrice });
            }
        
          }
+
+         [HttpGet("ImagePath")]
+         public async Task<IActionResult> GetImagePath()
+         {
+             var urlPath = _context.MenuItems.Select(value => value.MenuItemImageUrl).ToList(); 
+            return Ok(urlPath);
+         }
+         
+         
+         
     }
 }

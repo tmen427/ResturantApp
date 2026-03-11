@@ -10,11 +10,11 @@ namespace Resturant.Domain.SeedWork
 
         Task<int> SaveCartItemsAsync();
 
-        Task<MenuItems?> FindByPrimaryKey(int id);
+        Task<OrderItem?> FindByPrimaryKey(int id);
 
-        Task<List<MenuItems>> ReturnMenuItemsListAsync();
+        Task<List<OrderItem>> ReturnMenuItemsListAsync();
         
-        Task<List<MenuItems>> ReturnMenuItemListByGuid(string guidId);
+        Task<List<OrderItem>> ReturnMenuItemListByGuid(string guidId);
 
         Task AddShoppingCartItem(ShoppingCartItems shoppingCartItem);
 

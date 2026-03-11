@@ -16,7 +16,7 @@ public class ShoppingCartItems
     
     public decimal TotalPrice {get;set;}
 
-    public List<MenuItems> MenuItems { get; set; } = new List<MenuItems>();
+    public List<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
 
     public int? CustomerInformationId { get; set; }
 
