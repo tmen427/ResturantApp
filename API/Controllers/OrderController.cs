@@ -127,7 +127,9 @@ namespace API.Controllers
          [HttpGet("GetMenuItems")]
          public async Task<IActionResult> GetMenuItems()
          {
-             return Ok(await _context.MenuItems.ToListAsync()); 
+             var x = from menuitems in _context.MenuItems
+                 select new { Id = menuitems.Id , MenuItemName = menuitems.MenuItemName, MenuItemBasePrice = menuitems.MenuItemBasePrice.ToString("0.00") , MenuItemDescription = menuitems.MenuItemDescription, MenuItemImageUrl = menuitems.MenuItemImageUrl };
+             return Ok(x);
          }
          
          [HttpGet("GetMenuItemOptions")]

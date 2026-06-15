@@ -27,10 +27,9 @@ public class RegisterUser : Controller
         _logger = logger;
     }
 
-    public class WebUserDTO
+    public class WebUserDto
     {
         public string? FullName { get; set; }
-        public string? UserName { get; set; }
         public string? Email { get; set; }
         public string? Password { get; set; }
     }
@@ -63,53 +62,67 @@ public class RegisterUser : Controller
     [HttpPost("Login")]
     public async Task<IActionResult> Login([FromBody] LoginDTO login)
     {
-                    
-         var results = await _userManager.FindByEmailAsync(login.Email);
-        
-        
-        var result = await _signInManager.PasswordSignInAsync(results.UserName,
-            login.Password!, true, lockoutOnFailure: false);
+        if (login?.Email is null || login.Password is null)
+            return BadRequest("Email and password are required.");
 
-      
-        _logger.LogCritical(HttpContext.User.Identity.IsAuthenticated.ToString());
+        var user = await _userManager.FindByEmailAsync(login.Email);
+        if (user is null)
+            return Unauthorized("Invalid email or password.");
+
+        var result = await _signInManager.PasswordSignInAsync(
+            user.UserName!, login.Password, isPersistent: true, lockoutOnFailure: true);
+
         if (result.Succeeded)
         {
-              return Ok(result);
+            _logger.LogInformation("User {UserName} logged in.", user.UserName);
+            return Ok(new { message = "Login successful" });
         }
-        return BadRequest(result);
+
+        if (result.IsLockedOut)
+            return StatusCode(429, "Account is locked. Try again later.");
+
+        return Unauthorized("Invalid email or password.");
     }
 
     
 
 
     [HttpPost("CreateUser")]
-    public async Task<IActionResult> CreateUser([FromBody] WebUserDTO userDTO)
+    public async Task<IActionResult> CreateUser([FromBody] WebUserDto userDTO)
     {
+
+      //  string username = userDTO.Email!; 
         //convert here 
         WebUser user = new()
         {
             FullName = userDTO.FullName,
-            UserName = userDTO.UserName,
+            //username is based of the beginning of email
+            UserName = userDTO.Email?.Substring(0, userDTO.Email!.IndexOf('@')),
             Email = userDTO.Email,
-
         };
         //do not allow duplicate emails 
-        var results =  await _userManager.FindByEmailAsync(userDTO.Email);
-        if (results == null)
+        var email =  await _userManager.FindByEmailAsync(userDTO.Email);
+        if (email == null)
         {
-            //create new user
-         var result = await _userManager.CreateAsync(user, userDTO.Password);
-         if (result.Succeeded)
-         {
-             await _signInManager.SignInAsync(user, true);
-             return Ok(userDTO); 
-         }
-         
-         foreach (var error in result.Errors)
-         {
-             _logger.LogInformation(error.Description);
-         }
-         return Ok(result); 
+                 //create new user-must fufill password requirements
+                var result = await _userManager.CreateAsync(user, userDTO.Password);
+                if (result.Succeeded)
+                {
+                    await _signInManager.SignInAsync(user, true);
+                    return Ok(userDTO); 
+                }
+
+                if (result.Errors.Any())
+                {
+                    _logger.LogWarning("User {UserName} could not be created.", user.UserName);
+                    return BadRequest(new { message = "There was an error creating the account" });
+                
+                }
+                // foreach (var error in result.Errors)
+                // {
+                //     _logger.LogInformation(error.Description);
+                // }
+                return Ok(result); 
         }
 
         return BadRequest("The email is already in use");
