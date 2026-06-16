@@ -127,7 +127,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy(name: MyAllowSpecificOrigins,
         policy =>
         {
-            policy.WithOrigins("http://18.234.93.248", "https://yummy.tonymdesigns.com/", "http://localhost:4200") // The URL of your front-end
+            policy.WithOrigins("http://100.27.216.67", "https://yummy.tonymdesigns.com/", "http://localhost:4200") // The URL of your front-end
                 .AllowAnyHeader()
                 .AllowAnyMethod()
                 .AllowCredentials(); // IMPORTANT for cookies
