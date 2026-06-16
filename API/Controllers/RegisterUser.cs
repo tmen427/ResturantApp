@@ -87,51 +87,121 @@ public class RegisterUser : Controller
     
 
 
-    [HttpPost("CreateUser")]
-    public async Task<IActionResult> CreateUser([FromBody] WebUserDto userDTO)
-    {
-        string username = userDTO.Email?.Substring(0, userDTO.Email!.IndexOf('@'));
-         _logger.LogInformation("--------------------------------------------------------------------");
-        _logger.LogCritical("THIS IS THE USERNAME!!!!!!!" + username);
-      //  string username = userDTO.Email!; 
-        //convert here 
-        WebUser user = new()
-        {
-            
-            FullName = userDTO.FullName,
-            //username is based of the beginning of email
-            UserName = username, 
-            Email = userDTO.Email,
+    // [HttpPost("CreateUser")]
+    // public async Task<IActionResult> CreateUser([FromBody] WebUserDto userDTO)
+    // {
+    //     string username = userDTO.Email?.Substring(0, userDTO.Email!.IndexOf('@'));
+    //      _logger.LogInformation("--------------------------------------------------------------------");
+    //     _logger.LogCritical("THIS IS THE USERNAME!!!!!!!" + username);
+    //   //  string username = userDTO.Email!; 
+    //     //convert here 
+    //     WebUser user = new()
+    //     {
+    //         
+    //         FullName = userDTO.FullName,
+    //         //username is based of the beginning of email
+    //         UserName = username, 
+    //         Email = userDTO.Email,
+    //
+    //     };
+    //     //do not allow duplicate emails 
+    //     var email =  await _userManager.FindByEmailAsync(userDTO.Email);
+    //     if (email == null)
+    //     {
+    //              //create new user-must fufill password requirements
+    //             var result = await _userManager.CreateAsync(user, userDTO.Password);
+    //             if (result.Succeeded)
+    //             {
+    //                 await _signInManager.SignInAsync(user, true);
+    //                 return Ok(userDTO); 
+    //             }
+    //
+    //             if (result.Errors.Any())
+    //             {
+    //                 _logger.LogWarning("User {UserName} could not be created.", user.UserName);
+    //                 return BadRequest(new { message = "There was an error creating the account" });
+    //             
+    //             }
+    //             // foreach (var error in result.Errors)
+    //             // {
+    //             //     _logger.LogInformation(error.Description);
+    //             // }
+    //             return Ok(result); 
+    //     }
+    //
+    //     return BadRequest("The email is already in use");
+    // }
     
-        };
-        //do not allow duplicate emails 
-        var email =  await _userManager.FindByEmailAsync(userDTO.Email);
-        if (email == null)
-        {
-                 //create new user-must fufill password requirements
-                var result = await _userManager.CreateAsync(user, userDTO.Password);
-                if (result.Succeeded)
-                {
-                    await _signInManager.SignInAsync(user, true);
-                    return Ok(userDTO); 
-                }
+    
+    private static string BuildUserName(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+            throw new ArgumentException("Email is required");
 
-                if (result.Errors.Any())
-                {
-                    _logger.LogWarning("User {UserName} could not be created.", user.UserName);
-                    return BadRequest(new { message = "There was an error creating the account" });
-                
-                }
-                // foreach (var error in result.Errors)
-                // {
-                //     _logger.LogInformation(error.Description);
-                // }
-                return Ok(result); 
-        }
+        var atIndex = email.IndexOf('@');
 
-        return BadRequest("The email is already in use");
+        if (atIndex <= 0)
+            throw new ArgumentException("Invalid email format");
+
+        return email[..atIndex].Trim().ToLowerInvariant();
     }
 
+    [HttpPost("CreateUser")]
+    public async Task<IActionResult> CreateUser(WebUserDto userDTO)
+    {
+        if (userDTO == null)
+            return BadRequest("Request body is missing.");
+
+        if (string.IsNullOrWhiteSpace(userDTO.Email))
+            return BadRequest("Email is required.");
+
+        if (string.IsNullOrWhiteSpace(userDTO.FullName))
+            return BadRequest("Full name is required.");
+
+        // 1. Normalize email
+        var email = userDTO.Email.Trim().ToLowerInvariant();
+
+        // 2. Check duplicate email early
+        var existingEmailUser = await _userManager.FindByEmailAsync(email);
+        if (existingEmailUser != null)
+            return BadRequest("Email already in use.");
+
+        // 3. Build username safely
+        var baseUsername = BuildUserName(email);
+
+        // 4. Ensure username uniqueness
+        var username = baseUsername;
+        int suffix = 1;
+
+        while (await _userManager.FindByNameAsync(username) != null)
+        {
+            username = $"{baseUsername}{suffix}";
+            suffix++;
+        }
+
+        // 5. Create Identity user
+        var user = new WebUser
+        {
+            FullName = userDTO.FullName.Trim(),
+            UserName = username,
+            Email = email
+        };
+
+        // 6. Create user in Identity
+        var result = await _userManager.CreateAsync(user, userDTO.Password);
+
+        if (!result.Succeeded)
+        {
+            return BadRequest(result.Errors);
+        }
+
+        return Ok(new
+        {
+            message = "User created successfully",
+            username,
+            email
+        });
+    }
 
     
     [HttpGet("CheckDuplicateEmail")]
