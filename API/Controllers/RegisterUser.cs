@@ -30,6 +30,7 @@ public class RegisterUser : Controller
     public class WebUserDto
     {
         public string? FullName { get; set; }
+        public string? Username { get; set; }
         public string? Email { get; set; }
         public string? Password { get; set; }
     }
@@ -133,21 +134,7 @@ public class RegisterUser : Controller
     // }
     
     
-    private static string BuildUserName(string fullName)
-    {
-        if (string.IsNullOrWhiteSpace(fullName))
-            throw new ArgumentException("Full name is required");
-
-        var sanitized = new string(fullName.Where(char.IsLetterOrDigit).ToArray())
-            .ToLowerInvariant();
-
-        if (string.IsNullOrEmpty(sanitized))
-            throw new ArgumentException("Could not derive a valid username from full name");
-
-        return sanitized;
-    }
-
-    [HttpPost("CreateUser")]
+[HttpPost("CreateUser")]
     public async Task<IActionResult> CreateUser([FromBody] WebUserDto userDTO)
     {
         if (userDTO == null)
@@ -159,18 +146,16 @@ public class RegisterUser : Controller
         if (string.IsNullOrWhiteSpace(userDTO.FullName))
             return BadRequest("Full name is required.");
 
-        // 1. Normalize email
-        var email = userDTO.Email.Trim().ToLowerInvariant();
+        if (string.IsNullOrWhiteSpace(userDTO.Username))
+            return BadRequest("Username is required.");
 
-        // 2. Check duplicate email early
+        var email = userDTO.Email.Trim().ToLowerInvariant();
+        var baseUsername = userDTO.Username.Trim().ToLowerInvariant();
+
         var existingEmailUser = await _userManager.FindByEmailAsync(email);
         if (existingEmailUser != null)
             return BadRequest("Email already in use.");
 
-        // 3. Build username safely
-        var baseUsername = BuildUserName(userDTO.FullName);
-
-        // 4. Ensure username uniqueness
         var username = baseUsername;
         int suffix = 1;
 
@@ -180,7 +165,6 @@ public class RegisterUser : Controller
             suffix++;
         }
 
-        // 5. Create Identity user
         var user = new WebUser
         {
             FullName = userDTO.FullName.Trim(),
