@@ -90,15 +90,18 @@ public class RegisterUser : Controller
     [HttpPost("CreateUser")]
     public async Task<IActionResult> CreateUser([FromBody] WebUserDto userDTO)
     {
-
+        string username = userDTO.Email?.Substring(0, userDTO.Email!.IndexOf('@'));
+         _logger.LogInformation("--------------------------------------------------------------------");
+        _logger.LogInformation("User {UserName} logged in.", username);
       //  string username = userDTO.Email!; 
         //convert here 
         WebUser user = new()
         {
             FullName = userDTO.FullName,
             //username is based of the beginning of email
-            UserName = userDTO.Email?.Substring(0, userDTO.Email!.IndexOf('@')),
+            UserName = username, 
             Email = userDTO.Email,
+    
         };
         //do not allow duplicate emails 
         var email =  await _userManager.FindByEmailAsync(userDTO.Email);
