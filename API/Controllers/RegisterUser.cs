@@ -143,7 +143,13 @@ public class RegisterUser : Controller
         if (atIndex <= 0)
             throw new ArgumentException("Invalid email format");
 
-        return email[..atIndex].Trim().ToLowerInvariant();
+        var localPart = email[..atIndex].Trim().ToLowerInvariant();
+        var sanitized = new string(localPart.Where(char.IsLetterOrDigit).ToArray());
+
+        if (string.IsNullOrEmpty(sanitized))
+            throw new ArgumentException("Could not derive a valid username from email");
+
+        return sanitized;
     }
 
     [HttpPost("CreateUser")]
