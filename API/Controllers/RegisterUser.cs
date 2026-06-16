@@ -92,11 +92,12 @@ public class RegisterUser : Controller
     {
         string username = userDTO.Email?.Substring(0, userDTO.Email!.IndexOf('@'));
          _logger.LogInformation("--------------------------------------------------------------------");
-        _logger.LogInformation("User {UserName} logged in.", username);
+        _logger.LogCritical("THIS IS THE USERNAME!!!!!!!" + username);
       //  string username = userDTO.Email!; 
         //convert here 
         WebUser user = new()
         {
+            
             FullName = userDTO.FullName,
             //username is based of the beginning of email
             UserName = username, 
@@ -198,13 +199,9 @@ public class RegisterUser : Controller
         _logger.LogCritical("--------------------------------------------------------------");
         _logger.LogCritical("from the httpcontext user identity");
         _logger.LogCritical(HttpContext.User.Identity.Name);
-        //    _logger.LogDebug( User.Identity.IsAuthenticated.ToString()); 
-        // //   _logger.LogInformation(HttpContext.User.ToString());
-        // //   _logger.LogCritical(HttpContext.User.ToString());
-        //    _logger.LogCritical(HttpContext.User.Identity.IsAuthenticated.ToString());
-     //   _logger.LogCritical("from the controller" + HttpContext.User.ToString()); 
+  
 
-
+//possibly wrap into try catch
         var user = await _userManager.GetUserAsync(HttpContext.User);
   
         _logger.LogCritical(user.Email);
