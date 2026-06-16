@@ -133,21 +133,16 @@ public class RegisterUser : Controller
     // }
     
     
-    private static string BuildUserName(string email)
+    private static string BuildUserName(string fullName)
     {
-        if (string.IsNullOrWhiteSpace(email))
-            throw new ArgumentException("Email is required");
+        if (string.IsNullOrWhiteSpace(fullName))
+            throw new ArgumentException("Full name is required");
 
-        var atIndex = email.IndexOf('@');
-
-        if (atIndex <= 0)
-            throw new ArgumentException("Invalid email format");
-
-        var localPart = email[..atIndex].Trim().ToLowerInvariant();
-        var sanitized = new string(localPart.Where(char.IsLetterOrDigit).ToArray());
+        var sanitized = new string(fullName.Where(c => !char.IsWhiteSpace(c)).ToArray())
+            .ToLowerInvariant();
 
         if (string.IsNullOrEmpty(sanitized))
-            throw new ArgumentException("Could not derive a valid username from email");
+            throw new ArgumentException("Could not derive a valid username from full name");
 
         return sanitized;
     }
@@ -173,7 +168,7 @@ public class RegisterUser : Controller
             return BadRequest("Email already in use.");
 
         // 3. Build username safely
-        var baseUsername = BuildUserName(email);
+        var baseUsername = BuildUserName(userDTO.FullName);
 
         // 4. Ensure username uniqueness
         var username = baseUsername;
