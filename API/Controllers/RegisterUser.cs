@@ -138,7 +138,7 @@ public class RegisterUser : Controller
         if (string.IsNullOrWhiteSpace(fullName))
             throw new ArgumentException("Full name is required");
 
-        var sanitized = new string(fullName.Where(c => !char.IsWhiteSpace(c)).ToArray())
+        var sanitized = new string(fullName.Where(char.IsLetterOrDigit).ToArray())
             .ToLowerInvariant();
 
         if (string.IsNullOrEmpty(sanitized))
@@ -148,7 +148,7 @@ public class RegisterUser : Controller
     }
 
     [HttpPost("CreateUser")]
-    public async Task<IActionResult> CreateUser(WebUserDto userDTO)
+    public async Task<IActionResult> CreateUser([FromBody] WebUserDto userDTO)
     {
         if (userDTO == null)
             return BadRequest("Request body is missing.");
